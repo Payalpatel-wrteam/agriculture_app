@@ -14,11 +14,7 @@ class AppColors {
   static const Color purpleColor = Color(0xFFb56aff);
   static const Color greyColor = Colors.grey;
   static Color backColor = const Color(0xFFf7f7f7);
-  static Color facebookColor = const Color(0xFF3966b9);
-  static Color googleColor = const Color(0xFFf0f3f8);
-  static Color appleColor = const Color(0xFF000000);
-  static Color errorColor = const Color(0xFFff8383);
-  static Color successColor = const Color(0xFF3ee3a6);
+
   static Color unAtendedColor = Colors.deepOrange;
   static Color dialogBarrierColor = const Color(0x6e000000);
 }

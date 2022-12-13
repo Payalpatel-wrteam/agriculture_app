@@ -38,7 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
       emit(Authenticated(AuthModel(
           authProvider: authRepository.getAuthProviderFromString(
               session.getStringData(Constants.authProviderSessionKey)),
-          userId: session.getStringData(Constants.userIdSessionKey),
+          userId: session.getIntData(Constants.userIdSessionKey),
           firebaseId: session.getStringData(Constants.firebaseIdSessionKey),
           token: session.getStringData(Constants.tokenSessionKey))));
     } else {
@@ -47,7 +47,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   void authenticateUser(
-      {required String userId,
+      {required int userId,
       required String firebaseId,
       required String token,
       required AuthProvider authProvider}) {
@@ -74,11 +74,11 @@ class AuthCubit extends Cubit<AuthState> {
     return "";
   }
 
-  String getUserId() {
+  int getUserId() {
     if (state is Authenticated) {
       return (state as Authenticated).authModel.userId;
     }
-    return "0";
+    return 0;
   }
 
   void signOut() async {

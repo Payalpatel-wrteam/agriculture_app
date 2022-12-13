@@ -11,6 +11,7 @@ class ApiConstants {
   static const String deleteFarmDetailsApiKey = 'delete_farm_details';
 
   static const String nameAPiKey = 'name';
+  static const String idAPiKey = 'id';
   static const String emailAPiKey = 'email';
   static const String firebaseIdAPiKey = 'firebase_id';
 
@@ -32,4 +33,6 @@ class ApiConstants {
   static const String dateOfGivenWaterApiKey = 'date_of_given_water';
   static const String detailsOfFertilizerApiKey = 'details_of_fertilizer';
   static const String amountOfCompostApiKey = 'amount_of_compost';
+  static const String updatedAtApiKey = 'updated_at';
+  static const String createdAtApiKey = 'created_at';
 }

@@ -40,13 +40,13 @@ class Routes {
               return const ForgotPasswordScreen();
 
             case Routes.main:
-              return const MainScreen();
+              return MainScreen.route();
 
             case Routes.appDetails:
               return AppDetailsScreen.route(map!);
 
             case Routes.newApplication:
-              return NewApplicationScreen.route();
+              return NewApplicationScreen.route(map);
 
             default:
               return const SplashScreen();

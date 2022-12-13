@@ -1,3 +1,4 @@
+import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/helper/widgets.dart';
 import 'package:agriculture_app/screens/home/home_screen.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
@@ -15,6 +16,9 @@ class MainScreen extends StatefulWidget {
 
   @override
   _MainScreenState createState() => _MainScreenState();
+  static route() {
+    return const MainScreen();
+  }
 }
 
 class _MainScreenState extends State<MainScreen> {

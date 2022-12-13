@@ -9,6 +9,7 @@ class Session with ChangeNotifier {
   Session(this.pref);
 
   saveData<T>(String key, T value) {
+
     if (value is String) {
       pref.setString(key, value);
     }

@@ -4,7 +4,7 @@ class AuthModel {
   final AuthProvider authProvider;
   final String firebaseId;
   final String token;
-  final String userId;
+  final int userId;
   // final bool isNewUser;
 
   AuthModel({

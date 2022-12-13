@@ -1,3 +1,5 @@
+import 'package:agriculture_app/helper/api_constant.dart';
+
 class FarmDetails {
   String? farmerName;
   String? village;
@@ -39,29 +41,28 @@ class FarmDetails {
       id});
 
   FarmDetails.fromJson(Map<String, dynamic> json) {
-    farmerName = json['farmer_name'];
-    village = json['village'];
-    taluka = json['taluka'];
-    mobile = json['mobile'];
-    allocatedLandArea = json['allocated_land_area'];
-    locationOfFarm = json['location_of_farm'];
-    noOfTreesOnRidge = json['no_of_trees_on_ridge'];
-    cropsGrownInTheSurroundingFarm =
-        json['crops_grown_in_the_surrounding_farm'];
-    theCropPlantedInTheScheme = json['the_crop_planted_in_the_scheme'];
-    typeOfSeed = json['type_of_seed'];
-    amountOfSeed = json['amount_of_seed'];
-    dateOrDateOfPlanting = json['date_or_date_of_planting'];
-    dateOfGivenWater = json['date_of_given_water'];
-    detailsOfFertilizer = json['details_of_fertilizer'];
-    amountOfCompost = json['amount_of_compost'];
-    updatedAt = json['updated_at'];
-    createdAt = json['created_at'];
-    id = json['id'];
+    farmerName = json[ApiConstants.farmerNameApiKey];
+    village = json[ApiConstants.villageApiKey];
+    taluka = json[ApiConstants.talukaApiKey];
+    mobile = json[ApiConstants.mobileApiKey];
+    allocatedLandArea = json[ApiConstants.allocatedLandAreaApiKey];
+    locationOfFarm = json[ApiConstants.locationOfFarmApiKey];
+    noOfTreesOnRidge = json[ApiConstants.noOfTreesOnRidgeApiKey];
+    cropsGrownInTheSurroundingFarm = json[ApiConstants.grownCropsApiKey];
+    theCropPlantedInTheScheme = json[ApiConstants.plantedCropsApiKey];
+    typeOfSeed = json[ApiConstants.typeOfSeedApiKey];
+    amountOfSeed = json[ApiConstants.amountOfSeedApiKey];
+    dateOrDateOfPlanting = json[ApiConstants.dateOfPlantingApiKey];
+    dateOfGivenWater = json[ApiConstants.dateOfGivenWaterApiKey];
+    detailsOfFertilizer = json[ApiConstants.detailsOfFertilizerApiKey];
+    amountOfCompost = json[ApiConstants.amountOfCompostApiKey];
+    updatedAt = json[ApiConstants.updatedAtApiKey] ?? '';
+    createdAt = json[ApiConstants.createdAtApiKey] ?? '';
+    id = json[ApiConstants.idAPiKey];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['farmer_name'] = farmerName;
     data['village'] = village;
     data['taluka'] = taluka;

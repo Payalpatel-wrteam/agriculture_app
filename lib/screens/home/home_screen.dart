@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/strings.dart';
+import 'package:agriculture_app/main.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ]),
       body: BlocConsumer<UserDetailsCubit, UserDetailsState>(
           listener: (context, state) async {
-        print('use dtate-$state');
+        print('user state-$state');
 
         /// if the user is deactivated from backend, then we got its status value 0 ,. in that case redirect him to login screen,
         /// Note: for guest user, the status is 0, so we have to put condition for authenticated also
@@ -126,7 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
       child: Column(
-        children: <Widget>[_addNewApplication()],
+        children: <Widget>[
+          _addNewApplication(),
+          Expanded(child: _buildFarmDetailList())
+        ],
       ),
     );
   }
@@ -138,5 +143,51 @@ class _HomeScreenState extends State<HomeScreen> {
           color: AppColors.whiteColor,
         ),
         onPressed: () => pushNewPage(context, Routes.newApplication));
+  }
+
+  _buildFarmDetailList() {
+    return BlocConsumer<GetFarmDetailsCubit, GetFarmDetailsState>(
+      listener: (context, state) {
+        print('get farm list state==$state');
+      },
+      builder: (context, state) {
+        if (state is GetFarmDetailsSuccess) {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            itemCount: farmDetails.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                onTap: () => pushNewPage(context, Routes.newApplication,
+                    params: {
+                      'farmDetails': farmDetails[index],
+                      'isEditPage': true
+                    }),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  side: BorderSide(color: AppColors.backColor),
+                ),
+                tileColor: AppColors.greyColor.withOpacity(0.5),
+                title: AppText(
+                  text:
+                      '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
+                  textAlign: TextAlign.left,
+                ),
+                subtitle: AppText(
+                  text: '${StringRes.village} : ${farmDetails[index].village!}',
+                  textAlign: TextAlign.left,
+                ),
+              );
+            },
+          );
+        }
+        if (state is GetFarmDetailsInProgress) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/screens/main_screen.dart';
 import 'package:agriculture_app/screens/splash_screen.dart';
@@ -10,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/routes.dart';
 import 'cubits/auth/auth_cubit.dart';
 import 'cubits/auth/user_details_cubit.dart';
+import 'data/models/farm_details.dart';
 import 'helper/network_api.dart';
 import 'helper/session.dart';
 
@@ -17,6 +19,7 @@ late FirebaseAuth firebaseAuth;
 late SharedPreferences pref;
 late Session session;
 ApiBaseHelper apiBaseHelper = ApiBaseHelper();
+List<FarmDetails> farmDetails = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -36,6 +39,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
         BlocProvider<UserDetailsCubit>(create: (_) => UserDetailsCubit()),
+        BlocProvider<GetFarmDetailsCubit>(create: (_) => GetFarmDetailsCubit()),
       ],
       child: MaterialApp(
         title: Constants.appName,

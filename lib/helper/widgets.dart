@@ -3,6 +3,7 @@ import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -81,7 +82,8 @@ Widget buildTextButton(Widget child, VoidCallback onPressed) {
 }
 
 Widget inputWidget(
-    {required TextEditingController textEditingController,
+    {required String attribute,
+    required TextEditingController textEditingController,
     required TextInputType textInputAction,
     required String hint,
     required String title,
@@ -108,7 +110,8 @@ Widget inputWidget(
               )),
           child: IgnorePointer(
             ignoring: isReadOnly,
-            child: TextFormField(
+            child: FormBuilderTextField(
+              name: attribute,
               validator: (value) {
                 if (validator != null) {
                   validator(value);
@@ -136,6 +139,15 @@ Widget inputWidget(
       ],
     ),
   );
+}
+
+openDatePicker(BuildContext context) {
+  return showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      //DateTime.now() - not to allow to choose before today.
+      lastDate: DateTime(2100));
 }
 
 TextFormField buildTextField(
@@ -205,9 +217,9 @@ void pushNewPage(BuildContext context, String route,
   if (replaceAll == true) {
     Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
   } else if (replacePrevious == true) {
-    Navigator.of(context).pushReplacementNamed(route);
+    Navigator.of(context).pushReplacementNamed(route, arguments: params);
   } else {
-    Navigator.of(context).pushNamed(route);
+    Navigator.of(context).pushNamed(route, arguments: params);
   }
 }
 

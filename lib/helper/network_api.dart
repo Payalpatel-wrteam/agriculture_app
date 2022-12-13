@@ -18,21 +18,21 @@ class ApiBaseHelper {
     bool? headers,
     String requestType = 'post',
   }) async {
-    String token = session.getStringData(Constants.tokenSessionKey);
+    // String token = session.getStringData(Constants.tokenSessionKey);
 
-    // param[ApiConstants.userIdApiKey] =
-    //     session.getStringData(Constants.userIdSessionKey) ?? '';
+    param[ApiConstants.userIdApiKey] =
+        session.getIntData(Constants.userIdSessionKey) ?? 0;
     Map<String, String> defaultHeaders = {
       'accept': 'application/json',
     };
 
-    if (token.trim().isNotEmpty) {
-      defaultHeaders.addAll({
-        'Authorization': 'Bearer $token',
-      });
-    }
+    // if (token.trim().isNotEmpty) {
+    //   defaultHeaders.addAll({
+    //     'Authorization': 'Bearer $token',
+    //   });
+    // }
     var responseJson, response;
-    print('---param---$param---');
+    print('---param---$param---$apiMethodUrl');
     try {
       if (await InternetConnectivity.isUserOffline()) {
         throw const SocketException(StringRes.noInternetErrorMessage);
@@ -43,6 +43,8 @@ class ApiBaseHelper {
             .post(url,
                 headers: defaultHeaders, body: param.isNotEmpty ? param : {})
             .onError((error, stackTrace) async {
+          print(
+              '---api response---$response--$url--${param['id'].runtimeType}');
           return Future.value();
         }).timeout(const Duration(minutes: Constants.apiTimeOut));
       } else {
@@ -51,8 +53,12 @@ class ApiBaseHelper {
         //   headers: {'Authorization': 'Bearer ****'},
         // ).timeout(const Duration(minutes: Constants.apiTimeOut));
       }
-      responseJson = getJsonResponse(response);
-      print('---api response---$responseJson');
+
+      if (response != null) {
+        responseJson = getJsonResponse(response);
+      } else {
+        throw Exception(StringRes.defaultErrorMessage);
+      }
     } on SocketException {
       throw FetchDataException(StringRes.noInternetErrorMessage);
     } on TimeoutException {

@@ -32,7 +32,7 @@ class UserDetailsCubit extends Cubit<UserDetailsState> {
   UserDetailsCubit() : super(UserDetailsInitial());
 
   //to fetch user details form remote
-  void fetchUserDetails(String userId) async {
+  void fetchUserDetails(int userId) async {
     emit(UserDetailsFetchInProgress());
 
     try {
@@ -51,11 +51,11 @@ class UserDetailsCubit extends Cubit<UserDetailsState> {
     return "";
   }
 
-  String getUserId() {
+  int getUserId() {
     if (state is UserDetailsFetchSuccess) {
       return (state as UserDetailsFetchSuccess).userProfile.userId!;
     }
-    return "";
+    return 0;
   }
 
   String getUserFcmId() {
@@ -146,7 +146,7 @@ class UserDetailsCubit extends Cubit<UserDetailsState> {
     print('resetting user details');
     emit(UserDetailsInitial());
     final userDetails = UserProfile(
-        userId: '0',
+        userId: 0,
         fcmToken: '0',
         email: 'guest@gmail.com',
         name: 'Guest',

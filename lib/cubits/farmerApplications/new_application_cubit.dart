@@ -1,5 +1,6 @@
 import 'package:agriculture_app/data/models/farm_details.dart';
 import 'package:agriculture_app/data/repositories/farmer_repository.dart';
+import 'package:agriculture_app/helper/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class AddNewApplicationState {}
@@ -10,7 +11,8 @@ class AddNewApplicationInProgress extends AddNewApplicationState {}
 
 class AddNewApplicationSuccess extends AddNewApplicationState {
   final FarmDetails farmDetails;
-  AddNewApplicationSuccess(this.farmDetails);
+  final String successMessage;
+  AddNewApplicationSuccess(this.farmDetails, this.successMessage);
 }
 
 class AddNewApplicationFailure extends AddNewApplicationState {
@@ -22,48 +24,20 @@ class AddNewApplicationCubit extends Cubit<AddNewApplicationState> {
   FarmerRepository farmerRepository = FarmerRepository();
   AddNewApplicationCubit() : super(AddNewApplicationInitial());
 
-  void addNewApplication({
-    required String farmerName,
-    required String village,
-    required String taluka,
-    required String mobile,
-    required String allocatedLandArea,
-    required String locationOfFarm,
-    required String noOfTreesOnRidge,
-    required String grownCrops,
-    required String plantedCrops,
-    required String typeOfSeed,
-    required String amountOfSeed,
-    required String dateOfPlanting,
-    required String dateOfGivenWater,
-    required String detailsOfFertilizer,
-    required String amountOfCompost,
-    required String userId,
-  }) {
+  void addNewApplication(
+      {required Map<String, dynamic> farmDetails, required bool isEditPage}) {
     emit(AddNewApplicationInProgress());
     farmerRepository
-        .addNewApplication(
-      farmerName: farmerName,
-      village: village,
-      taluka: taluka,
-      mobile: mobile,
-      allocatedLandArea: allocatedLandArea,
-      locationOfFarm: locationOfFarm,
-      noOfTreesOnRidge: noOfTreesOnRidge,
-      grownCrops: grownCrops,
-      plantedCrops: plantedCrops,
-      typeOfSeed: typeOfSeed,
-      amountOfSeed: amountOfSeed,
-      dateOfPlanting: dateOfPlanting,
-      dateOfGivenWater: dateOfGivenWater,
-      detailsOfFertilizer: detailsOfFertilizer,
-      amountOfCompost: amountOfCompost,
-      userId: userId,
-    )
+        .addNewApplication(farmDetails: farmDetails, isEditPage: isEditPage)
         .then((value) {
-      emit(AddNewApplicationSuccess(value));
+      emit(AddNewApplicationSuccess(
+          value[Constants.data], value[Constants.message]));
     }).catchError((e) {
       emit(AddNewApplicationFailure(e.toString()));
     });
+  }
+
+  resetState() {
+    emit(AddNewApplicationInitial());
   }
 }

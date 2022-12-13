@@ -43,11 +43,10 @@ class AuthRepository {
         var response = await addUser(null, user, authProvider);
 
         if (response != null) {
-          session.saveData(
-              Constants.userIdSessionKey, response[Constants.id].toString());
+          session.saveData(Constants.userIdSessionKey, response[Constants.id]);
           // session.saveData(Constants.tokenSessionKey, response['api_token']);
           // session.saveData(Constants.fcmTokenSessionKey, response['fcm_id']);
-          result[Constants.userId] = response[Constants.id].toString();
+          result[Constants.userId] = response[Constants.id];
           result[Constants.token] = '';
           result[Constants.status] = '1';
         }

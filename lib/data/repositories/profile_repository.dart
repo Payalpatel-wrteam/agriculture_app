@@ -9,8 +9,8 @@ import '../../main.dart';
 import '../../screens/screen_widgets.dart/custom_exception.dart';
 
 class ProfileRepository {
-  Future<dynamic> getUserDetailsById(String userId) async {
-    Map<String, String> parameter = {ApiConstants.userIdApiKey: userId};
+  Future<dynamic> getUserDetailsById(int userId) async {
+    Map<String, dynamic> parameter = {ApiConstants.userIdApiKey: userId};
 
     var getdata = await apiBaseHelper.postAPICall(
         param: parameter, apiMethodUrl: ApiConstants.getUserApiKey);

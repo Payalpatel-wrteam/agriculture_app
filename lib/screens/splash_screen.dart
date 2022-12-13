@@ -42,13 +42,14 @@ class _SplashScreenState extends State<SplashScreen> {
       // if (session.getBoolData(Constants.showIntroSliderSessionKey) ?? true) {
       //   pushNewPage(context, Routes.onboarding, null, replacePrevious: true);
       // } else {
+      print('user api called');
       if (context.read<AuthCubit>().state is Authenticated) {
         context
             .read<UserDetailsCubit>()
             .fetchUserDetails(context.read<AuthCubit>().getUserId());
-        pushNewPage(context, Routes.main, replacePrevious: true);
+        pushNewPage(context, Routes.main, replaceAll: true);
       } else {
-        pushNewPage(context, Routes.login, replacePrevious: true);
+        pushNewPage(context, Routes.login, replaceAll: true);
       }
       // }
     });

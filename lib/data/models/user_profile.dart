@@ -2,7 +2,7 @@ import 'package:agriculture_app/helper/constant.dart';
 
 class UserProfile {
   final String? name;
-  final String? userId;
+  final int? userId;
   final String? firebaseId;
   final String? profileUrl;
   final String? email;
@@ -39,7 +39,7 @@ class UserProfile {
       // profileUrl: jsonData['profile'],
       // authType: jsonData['type'],
       // status: jsonData['status'],
-      // userId: jsonData['id'],
+      userId: jsonData['id'],
       // points: jsonData['points'],
       // ipAddress: jsonData['ip_address'],
       // fcmToken: jsonData['fcm_id'],
@@ -51,7 +51,7 @@ class UserProfile {
 
   UserProfile copyWith({
     String? fcmToken,
-    String? userId,
+    int? userId,
     String? profileUrl,
     String? name,
     String? mobile,
