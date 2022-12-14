@@ -74,11 +74,11 @@ class AuthCubit extends Cubit<AuthState> {
     return "";
   }
 
-  int getUserId() {
+  String getUserId() {
     if (state is Authenticated) {
-      return (state as Authenticated).authModel.userId;
+      return (state as Authenticated).authModel.userId.toString();
     }
-    return 0;
+    return '0';
   }
 
   void signOut() async {

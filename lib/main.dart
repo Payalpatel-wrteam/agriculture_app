@@ -19,7 +19,7 @@ late FirebaseAuth firebaseAuth;
 late SharedPreferences pref;
 late Session session;
 ApiBaseHelper apiBaseHelper = ApiBaseHelper();
-List<FarmDetails> farmDetails = [];
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         onGenerateRoute: Routes.onGenerateRouted,
-        initialRoute: Routes.splash,
       ),
     );
   }

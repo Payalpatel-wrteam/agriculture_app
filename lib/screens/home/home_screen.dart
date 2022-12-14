@@ -1,12 +1,17 @@
 import 'dart:async';
 
+import 'package:agriculture_app/cubits/farmerApplications/delete_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
+import 'package:agriculture_app/data/models/farm_details.dart';
 import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
+import 'package:agriculture_app/helper/design_config.dart';
 import 'package:agriculture_app/helper/strings.dart';
 import 'package:agriculture_app/main.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/retry_button.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/scroll_behavior.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -27,10 +32,25 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? apitimer;
   late Size size;
   bool _isLoading = false;
+  GetFarmDetailsSuccess? getBlocState;
+  late ScrollController _scrollController;
+  int _offset = 0;
   @override
   void initState() {
     super.initState();
-    getData();
+    _scrollController = ScrollController()..addListener(scrollListener);
+    getUserData();
+  }
+
+  scrollListener() {
+    if (_scrollController.position.pixels == _scrollController.offset) {
+      if (context.read<GetFarmDetailsCubit>().hasMoreData()) {
+        _offset += Constants.paginationLimit;
+        context.read<GetFarmDetailsCubit>().getMoreFarmDetails(
+            userId: context.read<UserDetailsCubit>().getUserId(),
+            offset: _offset);
+      }
+    }
   }
 
   @override
@@ -38,11 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (apitimer != null) {
       apitimer!.cancel();
     }
-
+    _scrollController.removeListener(scrollListener);
     super.dispose();
   }
 
-  getData() {
+  getUserData() {
     Future.delayed(Duration.zero).then((value) {
       if (context.read<AuthCubit>().state is Authenticated) {
         /// in case of api failure, we will call userDetails api in period of some seconds, until we get success
@@ -55,6 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+  }
+
+  getFarmerData() {
+    context
+        .read<GetFarmDetailsCubit>()
+        .getFarmDetails(userId: context.read<UserDetailsCubit>().getUserId());
   }
 
   callRetryApi() {
@@ -92,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (apitimer != null) {
             apitimer!.cancel();
           }
+          getFarmerData();
         }
         if (state is UserDetailsFetchFailure) {
           showSnackBar(context, state.errorMessage);
@@ -129,14 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
       child: Column(
         children: <Widget>[
-          _addNewApplication(),
+          _buildNewApplicationButton(),
           Expanded(child: _buildFarmDetailList())
         ],
       ),
     );
   }
 
-  _addNewApplication() {
+  _buildNewApplicationButton() {
     return ResponsiveButton(
         child: const AppText(
           text: StringRes.addNewFarmerDetails,
@@ -152,41 +179,102 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       builder: (context, state) {
         if (state is GetFarmDetailsSuccess) {
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            itemCount: farmDetails.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                onTap: () => pushNewPage(context, Routes.newApplication,
-                    params: {
-                      'farmDetails': farmDetails[index],
-                      'isEditPage': true
-                    }),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  side: BorderSide(color: AppColors.backColor),
-                ),
-                tileColor: AppColors.greyColor.withOpacity(0.5),
-                title: AppText(
-                  text:
-                      '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
-                  textAlign: TextAlign.left,
-                ),
-                subtitle: AppText(
-                  text: '${StringRes.village} : ${farmDetails[index].village!}',
-                  textAlign: TextAlign.left,
-                ),
-              );
+          getBlocState = context.read<GetFarmDetailsCubit>().state
+              as GetFarmDetailsSuccess;
+          return BlocListener<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
+            listener: (context, state) {
+              print('delete state==$state');
+              if (state is DeleteFarmDetailsSuccess) {
+                showSnackBar(context, state.successMessage);
+                getBlocState!.farmDetails
+                    .removeWhere((element) => element.id == state.id);
+                context.read<GetFarmDetailsCubit>().emitSuccessState(
+                    farmDetails: getBlocState!.farmDetails,
+                    totalData: getBlocState!.totalData,
+                    hasMore: getBlocState!.hasMore);
+              }
+
+              if (state is DeleteFarmDetailsFailure) {
+                getBlocState!.farmDetails
+                    .firstWhere((element) => element.id == state.id)
+                    .deleteInProgress = false;
+                showSnackBar(context, state.errorMessage);
+              }
             },
+            child: ScrollConfiguration(
+              behavior: MyBehavior(),
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                itemCount: state.farmDetails.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  print('${state.hasMore}==$index');
+                  return (state.hasMore && index == (state.farmDetails.length))
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildListTile(state.farmDetails, index);
+                },
+              ),
+            ),
           );
         }
         if (state is GetFarmDetailsInProgress) {
           return const Center(
             child: CircularProgressIndicator(),
           );
+        } else if (state is GetFarmDetailsFailure) {
+          print('get detail error==${state.errorMessage}');
+          _offset = 0;
+          return RetryButton(onPressed: getFarmerData);
         } else {
           return Container();
         }
+      },
+    );
+  }
+
+  Widget _buildListTile(List<FarmDetails> farmDetails, int index) {
+    return ListTile(
+      onTap: () => pushNewPage(context, Routes.newApplication,
+          params: {'farmDetails': farmDetails[index], 'isEditPage': true}),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: AppColors.backColor),
+      ),
+      tileColor: AppColors.whiteColor,
+      title: AppText(
+        text: '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
+        textAlign: TextAlign.left,
+      ),
+      subtitle: AppText(
+        text: '${StringRes.village} : ${farmDetails[index].village!}',
+        textAlign: TextAlign.left,
+      ),
+      trailing: _buildDeleteIcon(farmDetails, index),
+    );
+  }
+
+  BlocBuilder<DeleteFarmDetailsCubit, DeleteFarmDetailsState> _buildDeleteIcon(
+      List<FarmDetails> farmDetails, int index) {
+    return BlocBuilder<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
+      builder: (context, state) {
+        if (state is DeleteFarmDetailsInProgress &&
+            state.farmDetails
+                    .firstWhere(
+                        (element) => element.id == farmDetails[index].id)
+                    .deleteInProgress ==
+                true) {
+          return const CircularProgressIndicator();
+        }
+        return IconButton(
+            onPressed: () {
+              context.read<DeleteFarmDetailsCubit>().deleteFarmDetails(
+                  id: farmDetails[index].id!, farmDetails: farmDetails);
+            },
+            icon: const Icon(
+              Icons.delete,
+              color: AppColors.redColor,
+            ));
       },
     );
   }

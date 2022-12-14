@@ -21,6 +21,7 @@ class Constants {
   static const String imagePath = 'assets/images/';
   static const String iconPath = 'assets/icons/';
   static const String placeholderImage = '';
+  static const int paginationLimit = 10;
 
   static const String title = 'title';
   static const String type = 'type';
@@ -32,6 +33,7 @@ class Constants {
   static const String token = 'token';
   static const String error = 'error';
   static const String data = 'data';
+  static const String total = 'total';
   static const String message = 'message';
   static const String name = 'name';
   static const String email = 'email';

@@ -31,31 +31,45 @@ class FarmerRepository {
     }
   }
 
-  Future<List<FarmDetails>> getFarmDetails({
-    required String userId,
+  Future<Map<String, dynamic>> getFarmDetails({
+    required Map<String, String> parameter,
   }) async {
-    List<FarmDetails> farmList = farmDetails;
-    if (farmList.isNotEmpty) {
-      return farmList;
+    List<FarmDetails> farmList;
+
+    var getdata = await apiBaseHelper.postAPICall(
+        param: parameter, apiMethodUrl: ApiConstants.getFarmDetailsApiKey);
+    if (getdata != null) {
+      bool error = getdata[Constants.error];
+
+      if (!error) {
+        var list = getdata[Constants.data] as List<dynamic>;
+
+        farmList = list.map((model) => FarmDetails.fromJson(model)).toList();
+        return Map.from(getdata);
+      } else {
+        throw CustomException(getdata[Constants.message]);
+      }
     } else {
       throw CustomException(StringRes.defaultErrorMessage);
     }
-    // var getdata = await apiBaseHelper.postAPICall(
-    //     param: {ApiConstants.userIdApiKey: userId},
-    //     apiMethodUrl: ApiConstants.addFarmDetailsApiKey);
-    // if (getdata != null) {
-    //   bool error = getdata[Constants.error];
+  }
 
-    //   if (!error) {
-    //     var list = getdata[Constants.data] as List<dynamic>;
+  deleteFarmDetails({
+    required String id,
+  }) async {
+    var getdata = await apiBaseHelper.postAPICall(
+        param: {ApiConstants.idAPiKey: id},
+        apiMethodUrl: ApiConstants.deleteFarmDetailsApiKey);
+    if (getdata != null) {
+      bool error = getdata[Constants.error];
 
-    //     farmList = list.map((model) => FarmDetails.fromJson(model)).toList();
-    //     return farmList;
-    //   } else {
-    //     throw CustomException(getdata[Constants.message]);
-    //   }
-    // } else {
-    //   throw CustomException(StringRes.defaultErrorMessage);
-    // }
+      if (!error) {
+        return getdata[Constants.message];
+      } else {
+        throw CustomException(getdata[Constants.message]);
+      }
+    } else {
+      throw CustomException(StringRes.defaultErrorMessage);
+    }
   }
 }

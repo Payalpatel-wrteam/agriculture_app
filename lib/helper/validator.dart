@@ -34,8 +34,10 @@ class Validator {
   }
 
   static validatePhoneNumber(String? value) {
-    final pattern =
-        RegExp(r"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}");
+    print('validate phone==$value');
+    //below regex for indian number
+    final pattern = RegExp(
+        r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
     if (value!.isNotEmpty && !pattern.hasMatch(value)) {
       return StringRes.invalidPhoneMessage;
     } else {

@@ -19,7 +19,7 @@ class AppText extends StatelessWidget {
     this.color,
     this.size = 16,
     this.fontWeight = FontWeight.w400,
-    this.textAlign = TextAlign.center,
+    this.textAlign = TextAlign.left,
     this.textDecoration = TextDecoration.none,
     this.maxLines,
     this.overflow,

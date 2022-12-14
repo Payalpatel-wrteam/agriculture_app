@@ -18,6 +18,7 @@ class FarmDetails {
   String? amountOfCompost;
   String? updatedAt;
   String? createdAt;
+  bool? deleteInProgress;
   int? id;
 
   FarmDetails(
@@ -38,6 +39,7 @@ class FarmDetails {
       amountOfCompost,
       updatedAt,
       createdAt,
+      deleteInProgress,
       id});
 
   FarmDetails.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class FarmDetails {
     updatedAt = json[ApiConstants.updatedAtApiKey] ?? '';
     createdAt = json[ApiConstants.createdAtApiKey] ?? '';
     id = json[ApiConstants.idAPiKey];
+    deleteInProgress = false;
   }
 
   Map<String, dynamic> toJson() {

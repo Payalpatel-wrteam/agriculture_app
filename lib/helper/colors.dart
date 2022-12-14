@@ -12,7 +12,7 @@ class AppColors {
   static const Color redColor = Color(0xFFff4b00);
   static const Color yellowColor = Colors.yellow;
   static const Color purpleColor = Color(0xFFb56aff);
-  static const Color greyColor = Colors.grey;
+  static Color? greyColor = Colors.grey[500];
   static Color backColor = const Color(0xFFf7f7f7);
 
   static Color unAtendedColor = Colors.deepOrange;

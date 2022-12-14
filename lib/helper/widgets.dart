@@ -1,9 +1,9 @@
 import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/strings.dart';
+import 'package:agriculture_app/helper/validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -87,7 +87,9 @@ Widget inputWidget(
     required TextInputType textInputAction,
     required String hint,
     required String title,
+    int? maxLines,
     Function? validator,
+    bool isPhoneNumber = false,
     bool isReadOnly = false,
     bool isDropDown = false}) {
   return Padding(
@@ -106,38 +108,94 @@ Widget inputWidget(
               color: Colors.white,
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               border: Border.all(
-                color: Colors.grey[400]!,
+                color: AppColors.greyColor!,
               )),
           child: IgnorePointer(
             ignoring: isReadOnly,
-            child: FormBuilderTextField(
-              name: attribute,
+            child: TextFormField(
               validator: (value) {
-                if (validator != null) {
-                  validator(value);
-                } else {
+                {
                   if (value!.isEmpty) {
                     return "Please fill this field";
+                  }
+                  if (isPhoneNumber) {
+                    final pattern = RegExp(
+                        r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
+                    if (!pattern.hasMatch(value)) {
+                      return StringRes.invalidPhoneMessage;
+                    } else {
+                      return null;
+                    }
                   }
                 }
                 return null;
               },
               controller: textEditingController,
               keyboardType: textInputAction,
-              maxLines: 1,
+              maxLines: maxLines ?? 1,
               readOnly: isReadOnly,
-              style: const TextStyle(color: Colors.black),
+              style: const TextStyle(color: AppColors.blackColor),
               decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(15),
                   hintText: hint,
                   border: InputBorder.none,
                   // suffixIcon: isDropDown ? Image.asset() : null,
-                  hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14)),
+                  hintStyle:
+                      TextStyle(color: AppColors.greyColor, fontSize: 14)),
             ),
           ),
         ),
       ],
     ),
+  );
+}
+
+Widget dropwdownWidget(
+    {required String hintText,
+    required String text,
+    required String selectedValue,
+    required Function(String?) onChanged,
+    required List<DropdownMenuItem<String>>? items}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            text: text,
+          ),
+          Container(
+            margin: const EdgeInsets.only(top: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            decoration: BoxDecoration(
+                color: AppColors.whiteColor,
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                border: Border.all(
+                  color: AppColors.greyColor!,
+                )),
+            child: DropdownButton(
+              isExpanded: true,
+              style: const TextStyle(
+                  color: AppColors.blackColor), //Dropdown font color
+              dropdownColor: Colors.white, //dropdown menu background color
+              icon: Icon(Icons.keyboard_arrow_down_sharp,
+                  color: AppColors.greyColor), //dropdown indicator icon
+
+              hint: Text(hintText),
+              underline: const SizedBox(),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              // decoration: InputDecoration(
+              //     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+              //     border: InputBorder.none,
+              //     hintStyle:
+              //         TextStyle(color: AppColors.greyColor, fontSize: 14)),
+              value: selectedValue.isNotEmpty ? selectedValue : null,
+              onChanged: onChanged,
+              items: items,
+            ),
+          )
+        ]),
   );
 }
 

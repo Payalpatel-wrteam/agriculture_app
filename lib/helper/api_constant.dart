@@ -3,17 +3,21 @@ class ApiConstants {
   static const String apiBaseUrl = 'https://farmersweb.wrteam.in/api/';
 
   static const String accessApiKey = 'access_key';
-  static const String userIdApiKey = 'user_id';
+
   static const String userloginApiKey = 'userlogin';
   static const String getUserApiKey = 'get_user';
   static const String addFarmDetailsApiKey = 'add_farm_details';
   static const String editFarmDetailsApiKey = 'edit_farm_details';
   static const String deleteFarmDetailsApiKey = 'delete_farm_details';
+  static const String getFarmDetailsApiKey = 'get_farm_details';
 
   static const String nameAPiKey = 'name';
   static const String idAPiKey = 'id';
+  static const String userIdApiKey = 'user_id';
   static const String emailAPiKey = 'email';
   static const String firebaseIdAPiKey = 'firebase_id';
+  static const String limitAPiKey = 'limit';
+  static const String offsetAPiKey = 'offset';
 
   static const String privacyPolicyAppApitype = 'privacy_policy';
   static const String termsAppApitype = 'update_terms';

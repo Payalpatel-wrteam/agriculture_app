@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
 import 'constant.dart';
 
 class Session with ChangeNotifier {
@@ -9,7 +10,6 @@ class Session with ChangeNotifier {
   Session(this.pref);
 
   saveData<T>(String key, T value) {
-
     if (value is String) {
       pref.setString(key, value);
     }
@@ -49,11 +49,11 @@ class Session with ChangeNotifier {
   }
 
   removeCurrentUserData() {
-    // session.saveData(Constants.isUserLoggedInSessionKey, false);
-    // session.removeData(firebaseIdSessionKey);
-    // session.removeData(authProviderSessionKey);
-    // session.removeData(userIdSessionKey);
-    // session.removeData(tokenSessionKey);
-    // session.removeData(fcmTokenSessionKey);
+    session.saveData(Constants.isUserLoggedInSessionKey, false);
+    session.removeData(Constants.firebaseIdSessionKey);
+    session.removeData(Constants.authProviderSessionKey);
+    session.removeData(Constants.userIdSessionKey);
+    // session.removeData(Constants.tokenSessionKey);
+    // session.removeData(Constants.fcmTokenSessionKey);
   }
 }

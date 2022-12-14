@@ -107,7 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
           }
           print('-signin state--$state');
           // if (state.isNewUser) {
-          context.read<UserDetailsCubit>().fetchUserDetails(state.userId);
+          context
+              .read<UserDetailsCubit>()
+              .fetchUserDetails(state.userId.toString());
           // }
           context.read<AuthCubit>().authenticateUser(
               userId: state.userId,

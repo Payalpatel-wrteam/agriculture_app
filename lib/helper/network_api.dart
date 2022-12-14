@@ -20,8 +20,9 @@ class ApiBaseHelper {
   }) async {
     // String token = session.getStringData(Constants.tokenSessionKey);
 
-    param[ApiConstants.userIdApiKey] =
-        session.getIntData(Constants.userIdSessionKey) ?? 0;
+    // param[ApiConstants.userIdApiKey] =
+    //     session.getIntData(Constants.userIdSessionKey) ?? 0;
+    // print('sesson key ==${session.getIntData(Constants.userIdSessionKey)}');
     Map<String, String> defaultHeaders = {
       'accept': 'application/json',
     };
@@ -43,8 +44,7 @@ class ApiBaseHelper {
             .post(url,
                 headers: defaultHeaders, body: param.isNotEmpty ? param : {})
             .onError((error, stackTrace) async {
-          print(
-              '---api response---$response--$url--${param['id'].runtimeType}');
+          print('---api response---$response--$url--$error');
           return Future.value();
         }).timeout(const Duration(minutes: Constants.apiTimeOut));
       } else {

@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../app/routes.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/user_details_cubit.dart';
+import '../cubits/farmerApplications/delete_farm_details_cubit.dart';
 import '../helper/constant.dart';
 import '../helper/strings.dart';
 
@@ -17,7 +18,13 @@ class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
   static route() {
-    return const MainScreen();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<DeleteFarmDetailsCubit>(
+            create: (context) => DeleteFarmDetailsCubit()),
+      ],
+      child: const MainScreen(),
+    );
   }
 }
 

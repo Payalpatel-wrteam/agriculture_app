@@ -91,7 +91,7 @@ class StringRes {
   static const String taluka = 'તાલુકો';
   static const String mobile = 'મોબાઈલ નં';
   static const String allocatedLandArea = 'યોજના માં ફાળવેલ જમીન વિસ્તાર';
-  static const String locationOfFarm = "વાળી નું લોકેશન";
+  static const String locationOfFarm = "વાડી નું લોકેશન";
   static const String noOfTreesOnRidge = "શેઢા પર ના વૃક્ષો ની સંખ્યા";
   static const String grownCrops =
       "આજુબાજુ ની વાડી માં થતા વાવેતર ના પાકો ના નામ";
@@ -103,6 +103,7 @@ class StringRes {
   static const String detailsOfFertilizer =
       "પાણી સાથે આપેલ ખાતર નુ નામ , જથ્થો , તારીખ";
   static const String amountOfCompost = "પાક માં આપેલ કંપોસ્ટ ખાતર નો જથ્થો";
+  static const String detailsOfPlantation = "વાવેતર ની વિગતો";
 
   static const String edit = 'Edit';
 

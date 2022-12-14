@@ -1,5 +1,7 @@
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/new_application_cubit.dart';
+import 'package:agriculture_app/data/models/disctricts.dart';
+import 'package:agriculture_app/data/models/districts_list.dart';
 import 'package:agriculture_app/data/models/farm_details.dart';
 import 'package:agriculture_app/helper/api_constant.dart';
 import 'package:agriculture_app/helper/colors.dart';
@@ -13,7 +15,6 @@ import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.da
 import 'package:agriculture_app/screens/screen_widgets.dart/scroll_behavior.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 
 import '../../cubits/auth/auth_cubit.dart';
@@ -59,11 +60,16 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController dateOfGivenWaterTxtController = TextEditingController();
   TextEditingController detailsOfFertilizerTxtController =
       TextEditingController();
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _autoValidate = false;
   DateTime? plantingDate, givenWaterDate;
-  String formattedDate = '';
+  String defaultSelectedVillage = 'Select Village',
+      defaultSelectedDistrict = 'Select District';
+  String formattedDate = '', selectedTaluko = '', selectedVillage = '';
+
+  List<Districts> districtList = [];
+  List<String> villageList = [];
   void initializeControllers() {
     print('is Edit Page==${widget.isEditPage}');
     if (widget.isEditPage == true) {
@@ -96,6 +102,10 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   void initState() {
     super.initState();
     initializeControllers();
+    var list = DistrictsList().districts;
+    districtList = list.map((model) => Districts.fromJson(model)).toList();
+    selectedTaluko = districtList.first.subDistrict!;
+    selectedVillage = districtList.first.villages!.first;
     Future.delayed(Duration.zero, () {
       context.read<AddNewApplicationCubit>().resetState();
     });
@@ -103,7 +113,6 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('userId==${context.read<UserDetailsCubit>().getUserId()}');
     return Scaffold(
       key: _scaffoldKey,
       appBar: buildAppbar(context, StringRes.addNewFarmerDetails),
@@ -111,7 +120,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         behavior: MyBehavior(),
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          child: FormBuilder(
+          child: Form(
             key: _formKey,
             autovalidateMode: _autoValidate
                 ? AutovalidateMode.always
@@ -125,6 +134,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
 
   Column _buildInputWidgets(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         inputWidget(
           attribute: ApiConstants.farmerNameApiKey,
@@ -133,26 +143,47 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           hint: StringRes.farmerName,
           title: StringRes.farmerName,
         ),
-        inputWidget(
-          attribute: ApiConstants.villageApiKey,
-          textEditingController: villageTxtController,
-          textInputAction: TextInputType.name,
-          hint: StringRes.village,
-          title: StringRes.village,
-        ),
-        inputWidget(
-          attribute: ApiConstants.talukaApiKey,
-          textEditingController: talukaTxtController,
-          textInputAction: TextInputType.name,
-          hint: StringRes.taluka,
-          title: StringRes.taluka,
-        ),
+        dropwdownWidget(
+            hintText: StringRes.taluka,
+            text: StringRes.taluka,
+            selectedValue: selectedTaluko,
+            onChanged: (value) {
+              print('change of district==$selectedTaluko');
+              setState(() {
+                selectedTaluko = value.toString();
+                selectedVillage = defaultSelectedVillage;
+              });
+            },
+            items: districtList.map((item) {
+              return DropdownMenuItem(
+                  value: item.subDistrict, child: Text(item.subDistrict!));
+            }).toList()),
+        dropwdownWidget(
+            hintText: StringRes.village,
+            text: StringRes.village,
+            selectedValue: selectedVillage,
+            onChanged: (value) {
+              print('change of village==$selectedVillage');
+              setState(() {
+                selectedVillage = value.toString();
+              });
+            },
+            items: selectedTaluko.isNotEmpty
+                ? districtList
+                    .firstWhere(
+                        (element) => element.subDistrict == selectedTaluko)
+                    .villages!
+                    .map((item) {
+                    return DropdownMenuItem(value: item, child: Text(item));
+                  }).toList()
+                : null),
         inputWidget(
             attribute: ApiConstants.mobileApiKey,
             textEditingController: mobileTxtController,
             textInputAction: TextInputType.number,
             hint: StringRes.mobile,
             title: StringRes.mobile,
+            isPhoneNumber: true,
             validator: (value) => Validator.validatePhoneNumber(value)),
         inputWidget(
           attribute: ApiConstants.allocatedLandAreaApiKey,
@@ -176,11 +207,21 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           title: StringRes.noOfTreesOnRidge,
         ),
         inputWidget(
-          attribute: ApiConstants.grownCropsApiKey,
-          textEditingController: grownCropsTxtController,
-          textInputAction: TextInputType.name,
-          hint: StringRes.grownCrops,
-          title: StringRes.grownCrops,
+            attribute: ApiConstants.grownCropsApiKey,
+            textEditingController: grownCropsTxtController,
+            textInputAction: TextInputType.multiline,
+            hint: StringRes.grownCrops,
+            title: StringRes.grownCrops,
+            maxLines: 5),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: AppText(
+            text: StringRes.detailsOfPlantation,
+            size: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.blackColor,
+            textDecoration: TextDecoration.underline,
+          ),
         ),
         inputWidget(
           attribute: ApiConstants.plantedCropsApiKey,
@@ -246,12 +287,12 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               isReadOnly: true),
         ),
         inputWidget(
-          attribute: ApiConstants.detailsOfFertilizerApiKey,
-          textEditingController: detailsOfFertilizerTxtController,
-          textInputAction: TextInputType.multiline,
-          hint: StringRes.detailsOfFertilizer,
-          title: StringRes.detailsOfFertilizer,
-        ),
+            attribute: ApiConstants.detailsOfFertilizerApiKey,
+            textEditingController: detailsOfFertilizerTxtController,
+            textInputAction: TextInputType.multiline,
+            hint: StringRes.detailsOfFertilizer,
+            title: StringRes.detailsOfFertilizer,
+            maxLines: 5),
         inputWidget(
           attribute: ApiConstants.amountOfCompostApiKey,
           textEditingController: amountOfCompostTxtController,
@@ -273,13 +314,28 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           showSnackBar(_scaffoldKey.currentContext!, state.errorMessage);
         }
         if (state is AddNewApplicationSuccess) {
-          // if (context.read<GetFarmDetailsCubit>().state
-          //     is GetFarmDetailsSuccess) {
-          //   List<FarmDetails> oldDetails =
-          //       (state as GetFarmDetailsSuccess).farmDetails;
-          farmDetails.insert(0, state.farmDetails);
-          context.read<GetFarmDetailsCubit>().emitSuccessState(farmDetails);
-          // }
+          if (context.read<GetFarmDetailsCubit>().state
+              is GetFarmDetailsSuccess) {
+            List<FarmDetails> farmDetails = (context
+                    .read<GetFarmDetailsCubit>()
+                    .state as GetFarmDetailsSuccess)
+                .farmDetails;
+            final index = farmDetails
+                .indexWhere((element) => element.id == state.farmDetails.id);
+            if (index != -1) {
+              farmDetails[index] = state.farmDetails;
+            } else {
+              farmDetails.insert(0, state.farmDetails);
+            }
+            context.read<GetFarmDetailsCubit>().emitSuccessState(
+                farmDetails: farmDetails,
+                totalData: (context.read<GetFarmDetailsCubit>().state
+                        as GetFarmDetailsSuccess)
+                    .totalData,
+                hasMore: (context.read<GetFarmDetailsCubit>().state
+                        as GetFarmDetailsSuccess)
+                    .hasMore);
+          }
           showSnackBar(_scaffoldKey.currentContext!, state.successMessage);
           Navigator.of(context).pop();
         }
@@ -296,17 +352,47 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               color: AppColors.whiteColor,
             ),
             onPressed: () {
+              FocusScope.of(context).unfocus();
               if (context.read<AuthCubit>().state is Authenticated) {
                 if (state is AddNewApplicationInProgress) {
                   return;
                 } else {
                   if (_validateInput()) {
-                    Map<String, dynamic> map =
-                        Map.of(_formKey.currentState!.value);
-                    map[Constants.userId] =
-                        context.read<UserDetailsCubit>().getUserId();
+                    Map<String, dynamic> map = {
+                      ApiConstants.userIdApiKey:
+                          context.read<UserDetailsCubit>().getUserId(),
+                      ApiConstants.farmerNameApiKey:
+                          farmnerNameTxtController.text.trim(),
+                      ApiConstants.villageApiKey: selectedVillage,
+                      ApiConstants.talukaApiKey: selectedTaluko,
+                      ApiConstants.mobileApiKey:
+                          mobileTxtController.text.trim(),
+                      ApiConstants.allocatedLandAreaApiKey:
+                          allocatedLandAreaTxtController.text.trim(),
+                      ApiConstants.locationOfFarmApiKey:
+                          locationOfFarmTxtController.text.trim(),
+                      ApiConstants.noOfTreesOnRidgeApiKey:
+                          noOfTreesOnRidgeTxtController.text.trim(),
+                      ApiConstants.grownCropsApiKey:
+                          grownCropsTxtController.text.trim(),
+                      ApiConstants.plantedCropsApiKey:
+                          plantedCropsTxtController.text.trim(),
+                      ApiConstants.typeOfSeedApiKey:
+                          typeOfSeedTxtController.text.trim(),
+                      ApiConstants.amountOfSeedApiKey:
+                          amountOfSeedTxtController.text.trim(),
+                      ApiConstants.dateOfPlantingApiKey:
+                          dateOfPlantingTxtController.text.trim(),
+                      ApiConstants.dateOfGivenWaterApiKey:
+                          dateOfGivenWaterTxtController.text.trim(),
+                      ApiConstants.detailsOfFertilizerApiKey:
+                          detailsOfFertilizerTxtController.text.trim(),
+                      ApiConstants.amountOfCompostApiKey:
+                          amountOfCompostTxtController.text.trim(),
+                    };
+
                     if (widget.isEditPage == true) {
-                      map[Constants.id] = widget.farmDetails!.id!;
+                      map[Constants.id] = widget.farmDetails!.id.toString();
                     }
                     print('--map--$map');
 
