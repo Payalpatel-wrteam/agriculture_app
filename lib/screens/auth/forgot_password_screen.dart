@@ -1,4 +1,5 @@
 import 'package:agriculture_app/helper/colors.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/glassmorphism_container.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/repositories/auth_repository.dart';
@@ -24,21 +25,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
     return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        extendBodyBehindAppBar: true,
         appBar: _buildAppBar(),
-        body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _buildBodyFields()));
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: GlassmorphismContainer(
+          child: _buildBodyFields(),
+        ));
   }
 
   _buildAppBar() {
     return AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_rounded,
-              color: Theme.of(context).primaryColor,
+              color: AppColors.whiteShade,
             ),
             onPressed: () => Navigator.of(context).pop()));
   }
@@ -47,6 +49,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -57,21 +60,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               textAlign: TextAlign.left,
             ),
             defaultSizedBox(),
-            Container(
-              margin: EdgeInsets.only(
-                right: size.width * 0.17,
-              ),
-              child: AppText(
-                text: StringRes.forgotPasswordDesc,
-                color: AppColors.captionColor,
-                fontWeight: FontWeight.w300,
-                textAlign: TextAlign.left,
-                overflow: TextOverflow.visible,
-                lineSpacing: 1.7,
-              ),
+            AppText(
+              text: StringRes.forgotPasswordDesc,
+              color: AppColors.captionColor,
+              fontWeight: FontWeight.w300,
+              textAlign: TextAlign.left,
+              overflow: TextOverflow.visible,
+              lineSpacing: 1.7,
             ),
             SizedBox(
-              height: size.height * 0.06,
+              height: size.height * 0.05,
             ),
             buildTextField(
                 controller: _emailTextController,
@@ -79,9 +77,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 textAlign: TextAlign.center,
                 validator: Validator.validateEmail),
             SizedBox(
-              height: size.height * 0.09,
+              height: size.height * 0.05,
             ),
             ResponsiveButton(
+                height: 45,
+                radius: 50,
                 width: double.maxFinite,
                 child: const AppText(
                   text: StringRes.submitLbl,

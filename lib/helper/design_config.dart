@@ -31,11 +31,11 @@ const double bottomNavBarHeight = 55;
 //     end: Alignment.centerLeft,
 //     colors: [primaryColor, shadowColor]);
 
-BoxShadow get appShadow => const BoxShadow(
-      color: Color(0x0d000000),
+BoxShadow get appShadow => BoxShadow(
+      color: AppColors.shadowColor,
       spreadRadius: 0,
-      blurRadius: 40,
-      offset: Offset(0, 25), // changes position of shadow
+      blurRadius: 20,
+      offset: Offset(0, 2), // changes position of shadow
     );
 BoxShadow get boxShadow => const BoxShadow(
     color: Color(0x29000000),
@@ -55,6 +55,16 @@ Container roundedContainer(
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         color: color),
     child: child,
+  );
+}
+
+BorderRadius borderRadius(
+    double topLeft, double topRight, double bottomLeft, double bottomRight) {
+  return BorderRadius.only(
+    topLeft: Radius.circular(topLeft),
+    topRight: Radius.circular(topRight),
+    bottomLeft: Radius.circular(bottomLeft),
+    bottomRight: Radius.circular(bottomRight),
   );
 }
 

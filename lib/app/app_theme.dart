@@ -7,8 +7,9 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: AppColors.primaryColor,
     scaffoldBackgroundColor: AppColors.backColor,
+    secondaryHeaderColor: AppColors.whiteShade,
     dividerTheme: DividerThemeData(
-      color: Color(0xff707070).withOpacity(0.17),
+      color: const Color(0xff707070).withOpacity(0.17),
     ),
     appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.whiteColor,
@@ -24,6 +25,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         iconTheme: IconThemeData(color: AppColors.primaryColor)),
+    hintColor: AppColors.whiteColor,
     textTheme: const TextTheme(
       bodyText1: TextStyle(
         color: AppColors.primaryColor,

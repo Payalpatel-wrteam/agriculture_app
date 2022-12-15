@@ -231,22 +231,24 @@ TextFormField buildTextField(
     textInputAction: textInputAction,
     style: const TextStyle(
       fontSize: 16.0,
-      // color: secondaryColor,
+      color: AppColors.whiteColor,
     ),
     decoration: InputDecoration(
-      fillColor: const Color.fromARGB(255, 238, 237, 237),
+      fillColor: Colors.transparent,
       filled: true,
       enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(8)),
+          borderSide: BorderSide(color: AppColors.whiteShade),
+          borderRadius: BorderRadius.circular(50)),
       focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(8)),
+          borderSide: BorderSide(color: AppColors.whiteShade),
+          borderRadius: BorderRadius.circular(50)),
+      border: OutlineInputBorder(
+          borderSide: BorderSide(width: 3, color: AppColors.whiteShade),
+          borderRadius: BorderRadius.circular(50)),
       contentPadding: const EdgeInsets.all(15),
       hintText: hintText,
-      hintStyle: TextStyle(
+      hintStyle: const TextStyle(
         fontSize: 16.0,
-        color: AppColors.secondaryColor,
       ),
       suffixIcon: suffixWidget,
     ),
@@ -298,15 +300,19 @@ Widget buildSkip(BuildContext context, VoidCallback onPressed) {
       padding: const EdgeInsets.all(20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: const [
-          CaptionText(
+        children: [
+          AppText(
             text: StringRes.skip,
             size: 16,
+            color: Theme.of(context).secondaryHeaderColor,
           ),
-          SizedBox(
-            width: 8,
+          const SizedBox(
+            width: 2,
           ),
-          Icon(Icons.arrow_forward_ios_rounded)
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Theme.of(context).secondaryHeaderColor,
+          )
         ],
       ),
     ),

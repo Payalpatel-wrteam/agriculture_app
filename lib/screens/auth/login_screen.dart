@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:agriculture_app/helper/constant.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/glassmorphism_container.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
       onWillPop: () => Future.value(false),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Scaffold(body: _buildLoginFields(context)),
+        child: Scaffold(
+          body: GlassmorphismContainer(child: _buildLoginFields(context)),
+        ),
       ),
     );
   }
@@ -68,27 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              SizedBox(
-                height: MediaQuery.of(context).padding.top,
-              ),
-
               buildSkip(context, () {
                 // context.read<AuthCubit>().checkIsAuthenticated();
                 // context.read<UserDetailsCubit>().resetUserDetailsState();
                 // redirectToMainScreen(context);
               }),
-              // defaultSizedBox(),
-              const Align(
-                  alignment: Alignment.topLeft,
-                  child: AppLargeText(text: StringRes.signInLbl)),
-              SizedBox(
-                height: size.height * 0.06,
-              ),
               _buildEmailAndPassword(context),
-
-              SizedBox(
-                height: size.height * 0.15,
-              ),
               _buildSignUpButton(context),
             ]),
           ),
@@ -151,10 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   pushNewPage(context, Routes.forgotPassword);
                 }),
               ),
-              SizedBox(
-                height: size.height * 0.08,
-              ),
+              defaultSizedBox(),
               ResponsiveButton(
+                radius: 50,
+                height: 45,
                 width: double.maxFinite,
                 onPressed: state is SignInProgress &&
                         state.authProvider == AuthProvider.email
@@ -188,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget get _buildObscureIcons => _obscureText == true
       ? IconButton(
-          highlightColor: Colors.transparent,
+          color: AppColors.whiteShade,
           splashColor: Colors.transparent,
           onPressed: () {
             setState(() {
@@ -197,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           icon: const Icon(Icons.visibility))
       : IconButton(
-          highlightColor: Colors.transparent,
+          color: AppColors.whiteShade,
           splashColor: Colors.transparent,
           onPressed: () {
             setState(() {

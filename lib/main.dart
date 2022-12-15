@@ -1,3 +1,4 @@
+import 'package:agriculture_app/app/app_theme.dart';
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/screens/main_screen.dart';
@@ -5,6 +6,7 @@ import 'package:agriculture_app/screens/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +28,10 @@ void main() async {
   firebaseAuth = FirebaseAuth.instance;
   pref = await SharedPreferences.getInstance();
   session = Session(pref);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light));
   runApp(const MyApp());
 }
 
@@ -44,9 +50,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: Constants.appName,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: AppTheme.lightTheme,
         onGenerateRoute: Routes.onGenerateRouted,
       ),
     );

@@ -106,6 +106,7 @@ class StringRes {
   static const String detailsOfPlantation = "વાવેતર ની વિગતો";
 
   static const String edit = 'Edit';
+  static const String hello = 'Hello';
 
   //******end*****farmer screen string **********
 }

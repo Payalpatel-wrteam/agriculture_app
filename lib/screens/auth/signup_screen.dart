@@ -1,6 +1,7 @@
 import 'package:agriculture_app/helper/api_constant.dart';
 import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/glassmorphism_container.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,91 +54,90 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
     // changeStatusBarBrightnesss(darkTheme);
-    return Scaffold(
-      body: _buildSignupFields(context),
+    return WillPopScope(
+      onWillPop: () {
+        FocusScope.of(context).unfocus();
+        return Future.value(true);
+      },
+      child: Scaffold(
+        body: _buildSignupFields(context),
+      ),
     );
   }
 
   Widget _buildSignupFields(BuildContext context) {
     return ScrollConfiguration(
-      behavior: MyBehavior(),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: <Widget>[
-                SizedBox(height: MediaQuery.of(context).padding.top),
-
-                buildSkip(context, () {
-                  // context.read<AuthCubit>().checkIsAuthenticated();
-                  // context.read<UserDetailsCubit>().resetUserDetailsState();
-                  // redirectToMainScreen(context);
-                }),
-                // defaultSizedBox(),
-                const Align(
-                    alignment: Alignment.topLeft,
-                    child: AppLargeText(text: StringRes.signUpLbl)),
-                SizedBox(
-                  height: size.height * 0.06,
-                ),
-                buildTextField(
-                    controller: _nameTextController,
-                    hintText: StringRes.nameHint,
-                    focusNode: _nameNode,
-                    textInputAction: TextInputAction.next,
-                    validator: Validator.validateName,
-                    onFieldSubmitted: (value) {
-                      _nameNode.unfocus();
-                      FocusScope.of(context).requestFocus(_phoneNode);
+        behavior: MyBehavior(),
+        child: GlassmorphismContainer(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: <Widget>[
+                    buildSkip(context, () {
+                      // context.read<AuthCubit>().checkIsAuthenticated();
+                      // context.read<UserDetailsCubit>().resetUserDetailsState();
+                      // redirectToMainScreen(context);
                     }),
-                defaultSizedBox(),
+                    // defaultSizedBox(),
+                    const Align(
+                        alignment: Alignment.topLeft,
+                        child: AppLargeText(text: StringRes.signUpLbl)),
+                    defaultSizedBox(),
+                    buildTextField(
+                        controller: _nameTextController,
+                        hintText: StringRes.nameHint,
+                        focusNode: _nameNode,
+                        textInputAction: TextInputAction.next,
+                        validator: Validator.validateName,
+                        onFieldSubmitted: (value) {
+                          _nameNode.unfocus();
+                          FocusScope.of(context).requestFocus(_phoneNode);
+                        }),
+                    const SizedBox(height: 10),
 
-                buildTextField(
-                    controller: _emailTextController,
-                    hintText: StringRes.emailHint,
-                    textInputAction: TextInputAction.next,
-                    validator: Validator.validateEmail),
-                defaultSizedBox(),
-                buildTextField(
-                  controller: _passwordTextController,
-                  hintText: StringRes.passwordHint,
-                  textInputAction: TextInputAction.done,
-                  validator: Validator.validatePassword,
-                  obscure: _obscureText,
-                  suffixWidget: _buildObscureIcons,
+                    buildTextField(
+                        controller: _emailTextController,
+                        hintText: StringRes.emailHint,
+                        textInputAction: TextInputAction.next,
+                        validator: Validator.validateEmail),
+                    const SizedBox(height: 10),
+                    buildTextField(
+                      controller: _passwordTextController,
+                      hintText: StringRes.passwordHint,
+                      textInputAction: TextInputAction.done,
+                      validator: Validator.validatePassword,
+                      obscure: _obscureText,
+                      suffixWidget: _buildObscureIcons,
+                    ),
+                    const SizedBox(height: 10),
+                    buildTextField(
+                      controller: _cnfPasswordTextController,
+                      hintText: StringRes.confirmPasswordHint,
+                      obscure: _cnObscureText,
+                      suffixWidget: _buildCnfObscureIcons,
+                      validator: (value) {
+                        if (value != _passwordTextController.text) {
+                          return StringRes.passwordMismatchMessage;
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                    defaultSizedBox(),
+                    _buildSignupButton(),
+
+                    // _buildAggreemetStatement(),
+                    const SizedBox(height: 10),
+                    _buildAlreadyHaveAccountStatement()
+                  ],
                 ),
-                defaultSizedBox(),
-                buildTextField(
-                  controller: _cnfPasswordTextController,
-                  hintText: StringRes.confirmPasswordHint,
-                  obscure: _cnObscureText,
-                  suffixWidget: _buildCnfObscureIcons,
-                  validator: (value) {
-                    if (value != _passwordTextController.text) {
-                      return StringRes.passwordMismatchMessage;
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-                defaultSizedBox(),
-                _buildSignupButton(),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                _buildAggreemetStatement(),
-                SizedBox(
-                  height: size.height * 0.06,
-                ),
-                _buildAlreadyHaveAccountStatement()
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget get _buildObscureIcons => _obscureText == true
@@ -167,6 +167,7 @@ class _SignupScreenState extends State<SignupScreen> {
   IconButton _buildInVisibleIcon(VoidCallback onTap) {
     return IconButton(
         splashColor: Colors.transparent,
+        color: AppColors.whiteShade,
         onPressed: onTap,
         icon: const Icon(Icons.visibility_off));
   }
@@ -174,6 +175,7 @@ class _SignupScreenState extends State<SignupScreen> {
   IconButton _buildVisibleIcon(VoidCallback onTap) {
     return IconButton(
         splashColor: Colors.transparent,
+        color: AppColors.whiteShade,
         onPressed: onTap,
         icon: const Icon(Icons.visibility));
   }
@@ -191,6 +193,8 @@ class _SignupScreenState extends State<SignupScreen> {
       },
       builder: (context, state) {
         return ResponsiveButton(
+          height: 45,
+          radius: 50,
           width: double.maxFinite,
           onPressed: state is SignUpProgress
               ? () {}
@@ -296,6 +300,7 @@ class _SignupScreenState extends State<SignupScreen> {
               text: StringRes.signInLbl,
               fontWeight: FontWeight.w500,
             ), () {
+          FocusScope.of(context).unfocus();
           Navigator.of(context).pop();
         })
       ],

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/new_application_cubit.dart';
 import 'package:agriculture_app/data/models/disctricts.dart';
@@ -10,11 +12,15 @@ import 'package:agriculture_app/helper/strings.dart';
 import 'package:agriculture_app/helper/validator.dart';
 import 'package:agriculture_app/helper/widgets.dart';
 import 'package:agriculture_app/main.dart';
+import 'package:agriculture_app/screens/animated_textformfield.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/scroll_behavior.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../cubits/auth/auth_cubit.dart';
@@ -70,6 +76,13 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
 
   List<Districts> districtList = [];
   List<String> villageList = [];
+  String? _currentAddress;
+  Position? _currentPosition;
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
+
+  static CameraPosition? _kGooglePlex;
+  List<Placemark>? placemarks;
   void initializeControllers() {
     print('is Edit Page==${widget.isEditPage}');
     if (widget.isEditPage == true) {
@@ -112,6 +125,12 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   }
 
   @override
+  void dispose() {
+    changeStatusBarBrightnesss(Constants.lightTheme);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -143,6 +162,9 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           hint: StringRes.farmerName,
           title: StringRes.farmerName,
         ),
+        // AnimatedTextField(
+        //   title: StringRes.allocatedLandArea,
+        // ),
         dropwdownWidget(
             hintText: StringRes.taluka,
             text: StringRes.taluka,
@@ -192,13 +214,17 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           hint: StringRes.allocatedLandArea,
           title: StringRes.allocatedLandArea,
         ),
-        inputWidget(
-          attribute: ApiConstants.locationOfFarmApiKey,
-          textEditingController: locationOfFarmTxtController,
-          textInputAction: TextInputType.name,
-          hint: StringRes.locationOfFarm,
-          title: StringRes.locationOfFarm,
+        GestureDetector(
+          onTap: _getCurrentPosition,
+          child: inputWidget(
+              attribute: ApiConstants.locationOfFarmApiKey,
+              textEditingController: locationOfFarmTxtController,
+              textInputAction: TextInputType.name,
+              hint: StringRes.locationOfFarm,
+              title: StringRes.locationOfFarm,
+              isReadOnly: true),
         ),
+        if (_kGooglePlex != null && _currentPosition != null) _buildGoogleMap(),
         inputWidget(
           attribute: ApiConstants.noOfTreesOnRidgeApiKey,
           textEditingController: noOfTreesOnRidgeTxtController,
@@ -422,5 +448,79 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       });
       return false;
     }
+  }
+
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled && mounted) {
+      showSnackBar(context,
+          'Location services are disabled. Please enable the services');
+
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied && mounted) {
+        showSnackBar(context, 'Location permissions are denied');
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever && mounted) {
+      showSnackBar(context,
+          'Location permissions are permanently denied, we cannot request permissions.');
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _getCurrentPosition() async {
+    final hasPermission = await _handleLocationPermission();
+    print('has permission--$hasPermission');
+    if (!hasPermission) return;
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() {
+        print('position--$position');
+        _kGooglePlex = CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 17.4746,
+        );
+        _getAddressFromLatLng(position);
+        _currentPosition = position;
+      });
+    }).catchError((e) {
+      print(e.toString());
+    });
+  }
+
+  _buildGoogleMap() {
+    return SizedBox(
+      width: double.maxFinite,
+      height: 200,
+      child: GoogleMap(
+        mapType: MapType.hybrid,
+        initialCameraPosition: _kGooglePlex!,
+        onMapCreated: (GoogleMapController controller) {
+          _controller.complete(controller);
+        },
+      ),
+    );
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(position.latitude, position.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        locationOfFarmTxtController.text =
+            '${place.street}, ${place.subLocality},${place.subAdministrativeArea}, ${place.postalCode}';
+      });
+    }).catchError((e) {
+      debugPrint(e);
+    });
   }
 }
