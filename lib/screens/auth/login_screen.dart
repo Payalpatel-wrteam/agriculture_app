@@ -49,9 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
             .values); //need to reshow status bar if login call from onboarding
     size = MediaQuery.of(context).size;
     // changeStatusBarBrightnesss(darkTheme);
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(body: _buildLoginFields(context)),
+    return WillPopScope(
+      onWillPop: () => Future.value(false),
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(body: _buildLoginFields(context)),
+      ),
     );
   }
 
@@ -70,9 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               buildSkip(context, () {
-                context.read<AuthCubit>().checkIsAuthenticated();
-                context.read<UserDetailsCubit>().resetUserDetailsState();
-                redirectToMainScreen(context);
+                // context.read<AuthCubit>().checkIsAuthenticated();
+                // context.read<UserDetailsCubit>().resetUserDetailsState();
+                // redirectToMainScreen(context);
               }),
               // defaultSizedBox(),
               const Align(

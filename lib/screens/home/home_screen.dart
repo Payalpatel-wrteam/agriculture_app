@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:agriculture_app/cubits/farmerApplications/delete_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/data/models/farm_details.dart';
+import 'package:agriculture_app/helper/api_constant.dart';
 import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/design_config.dart';
@@ -35,22 +36,22 @@ class _HomeScreenState extends State<HomeScreen> {
   GetFarmDetailsSuccess? getBlocState;
   late ScrollController _scrollController;
   int _offset = 0;
+  // There is next page or not
+  bool _hasNextPage = true;
+  late Map<String, dynamic> param;
+  List<FarmDetails> farmDetails = [];
+
+  // Used to display loading indicators when _loadMore function is running
+  bool _isLoadMoreRunning = false;
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController()..addListener(scrollListener);
+    _scrollController = ScrollController()..addListener(_loadMore);
+    param = {
+      ApiConstants.userIdApiKey: context.read<UserDetailsCubit>().getUserId(),
+      ApiConstants.limitAPiKey: Constants.paginationLimit.toString()
+    };
     getUserData();
-  }
-
-  scrollListener() {
-    if (_scrollController.position.pixels == _scrollController.offset) {
-      if (context.read<GetFarmDetailsCubit>().hasMoreData()) {
-        _offset += Constants.paginationLimit;
-        context.read<GetFarmDetailsCubit>().getMoreFarmDetails(
-            userId: context.read<UserDetailsCubit>().getUserId(),
-            offset: _offset);
-      }
-    }
   }
 
   @override
@@ -58,8 +59,57 @@ class _HomeScreenState extends State<HomeScreen> {
     if (apitimer != null) {
       apitimer!.cancel();
     }
-    _scrollController.removeListener(scrollListener);
+    _scrollController.removeListener(_loadMore);
     super.dispose();
+  }
+
+// This function will be triggered whenver the user scroll
+  // to near the bottom of the list view
+  void _loadMore() async {
+    if (_hasNextPage == true &&
+        _isLoadMoreRunning == false &&
+        _scrollController.position.pixels <
+            _scrollController.position.maxScrollExtent) {
+      _offset += Constants.paginationLimit; // Increase _page by 1
+
+      setState(() {
+        _isLoadMoreRunning = true; // Display a progress indicator at the bottom
+      });
+
+      try {
+        param[ApiConstants.offsetAPiKey] = _offset.toString();
+
+        var response = await apiBaseHelper.postAPICall(
+            param: param, apiMethodUrl: ApiConstants.getFarmDetailsApiKey);
+
+        if (!response[Constants.error]) {
+          var list = response[Constants.data] as List<dynamic>;
+          final fetchedData =
+              list.map((model) => FarmDetails.fromJson(model)).toList();
+
+          if (fetchedData.isNotEmpty) {
+            setState(() {
+              farmDetails.addAll(fetchedData);
+            });
+          }
+          if (farmDetails.length == response[Constants.total]) {
+            setState(() {
+              _hasNextPage = false;
+            });
+          }
+        } else {
+          setState(() {
+            _hasNextPage = false;
+          });
+        }
+      } catch (err) {
+        // print('Something went wrong!');
+      }
+
+      setState(() {
+        _isLoadMoreRunning = false;
+      });
+    }
   }
 
   getUserData() {
@@ -175,45 +225,52 @@ class _HomeScreenState extends State<HomeScreen> {
   _buildFarmDetailList() {
     return BlocConsumer<GetFarmDetailsCubit, GetFarmDetailsState>(
       listener: (context, state) {
-        print('get farm list state==$state');
+        if (state is GetFarmDetailsSuccess) {
+          farmDetails = state.farmDetails;
+        }
       },
       builder: (context, state) {
         if (state is GetFarmDetailsSuccess) {
           getBlocState = context.read<GetFarmDetailsCubit>().state
               as GetFarmDetailsSuccess;
-          return BlocListener<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
-            listener: (context, state) {
-              print('delete state==$state');
-              if (state is DeleteFarmDetailsSuccess) {
-                showSnackBar(context, state.successMessage);
-                getBlocState!.farmDetails
-                    .removeWhere((element) => element.id == state.id);
-                context.read<GetFarmDetailsCubit>().emitSuccessState(
-                    farmDetails: getBlocState!.farmDetails,
-                    totalData: getBlocState!.totalData,
-                    hasMore: getBlocState!.hasMore);
-              }
-
-              if (state is DeleteFarmDetailsFailure) {
-                getBlocState!.farmDetails
-                    .firstWhere((element) => element.id == state.id)
-                    .deleteInProgress = false;
-                showSnackBar(context, state.errorMessage);
-              }
+          return RefreshIndicator(
+            onRefresh: () async {
+              getFarmerData();
             },
-            child: ScrollConfiguration(
-              behavior: MyBehavior(),
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                itemCount: state.farmDetails.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  print('${state.hasMore}==$index');
-                  return (state.hasMore && index == (state.farmDetails.length))
-                      ? const Center(child: CircularProgressIndicator())
-                      : _buildListTile(state.farmDetails, index);
-                },
+            triggerMode: RefreshIndicatorTriggerMode.anywhere,
+            child: BlocListener<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
+              listener: (context, state) {
+                print('delete state==$state');
+                if (state is DeleteFarmDetailsSuccess) {
+                  showSnackBar(context, state.successMessage);
+                  getBlocState!.farmDetails
+                      .removeWhere((element) => element.id == state.id);
+                  context.read<GetFarmDetailsCubit>().emitSuccessState(
+                      farmDetails: getBlocState!.farmDetails,
+                      totalData: getBlocState!.totalData,
+                      hasMore: getBlocState!.hasMore);
+                }
+
+                if (state is DeleteFarmDetailsFailure) {
+                  getBlocState!.farmDetails
+                      .firstWhere((element) => element.id == state.id)
+                      .deleteInProgress = false;
+                  showSnackBar(context, state.errorMessage);
+                }
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(child: _buildListView(state)),
+                  if (_isLoadMoreRunning == true)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10, bottom: 40),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                ],
               ),
             ),
           );
@@ -230,6 +287,21 @@ class _HomeScreenState extends State<HomeScreen> {
           return Container();
         }
       },
+    );
+  }
+
+  ScrollConfiguration _buildListView(GetFarmDetailsSuccess state) {
+    return ScrollConfiguration(
+      behavior: MyBehavior(),
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        itemCount: farmDetails.length,
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          return _buildListTile(farmDetails, index);
+        },
+      ),
     );
   }
 

@@ -10,6 +10,8 @@ class GetFarmDetailsInitial extends GetFarmDetailsState {}
 
 class GetFarmDetailsInProgress extends GetFarmDetailsState {}
 
+class GetMoreFarmDetailsInProgress extends GetFarmDetailsState {}
+
 class GetFarmDetailsSuccess extends GetFarmDetailsState {
   final List<FarmDetails> farmDetails;
   final int totalData;
@@ -50,38 +52,8 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
     });
   }
 
-  void getMoreFarmDetails({
-    required String userId,
-    required int offset,
-  }) {
-    farmerRepository.getFarmDetails(parameter: {
-      ApiConstants.userIdApiKey: userId,
-      ApiConstants.limitAPiKey: Constants.paginationLimit.toString(),
-      ApiConstants.offsetAPiKey: offset.toString()
-    }).then((value) {
+ 
 
-      final oldState = (state as GetFarmDetailsSuccess);
-      var list = value[Constants.data] as List<dynamic>;
-      final data = list.map((model) => FarmDetails.fromJson(model)).toList();
-      List<FarmDetails> updatedDetails = List.from(oldState.farmDetails);
-      updatedDetails.addAll(data);
-
-      print('data from api--${updatedDetails.length}');
-
-      emit(GetFarmDetailsSuccess(updatedDetails, oldState.totalData,
-          oldState.totalData > updatedDetails.length));
-    }).catchError((e) {
-      emit(GetFarmDetailsFailure(e.toString()));
-    });
-  }
-
-  bool hasMoreData() {
-    if (state is GetFarmDetailsSuccess) {
-      return (state as GetFarmDetailsSuccess).hasMore;
-    } else {
-      return false;
-    }
-  }
 
   resetState() {
     emit(GetFarmDetailsInitial());

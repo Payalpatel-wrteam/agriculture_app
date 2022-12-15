@@ -71,9 +71,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(height: MediaQuery.of(context).padding.top),
 
                 buildSkip(context, () {
-                  context.read<AuthCubit>().checkIsAuthenticated();
-                  context.read<UserDetailsCubit>().resetUserDetailsState();
-                  redirectToMainScreen(context);
+                  // context.read<AuthCubit>().checkIsAuthenticated();
+                  // context.read<UserDetailsCubit>().resetUserDetailsState();
+                  // redirectToMainScreen(context);
                 }),
                 // defaultSizedBox(),
                 const Align(
