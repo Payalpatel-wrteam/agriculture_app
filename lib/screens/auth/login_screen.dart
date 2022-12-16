@@ -73,11 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              buildSkip(context, () {
-                // context.read<AuthCubit>().checkIsAuthenticated();
-                // context.read<UserDetailsCubit>().resetUserDetailsState();
-                // redirectToMainScreen(context);
-              }),
+              // buildSkip(context, () {
+              //   context.read<AuthCubit>().checkIsAuthenticated();
+              //   context.read<UserDetailsCubit>().resetUserDetailsState();
+              //   redirectToMainScreen(context);
+              // }),
+              const Align(
+                  alignment: Alignment.topLeft,
+                  child: AppLargeText(text: StringRes.signInLbl)),
+              defaultSizedBox(),
               _buildEmailAndPassword(context),
               _buildSignUpButton(context),
             ]),
@@ -151,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? () {}
                     : () {
                         if (_formKey.currentState!.validate()) {
+                          FocusScope.of(context).unfocus();
                           {
                             context.read<SignInCubit>().signInUser(
                                 AuthProvider.email,

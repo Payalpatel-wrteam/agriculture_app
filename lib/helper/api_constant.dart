@@ -39,4 +39,6 @@ class ApiConstants {
   static const String amountOfCompostApiKey = 'amount_of_compost';
   static const String updatedAtApiKey = 'updated_at';
   static const String createdAtApiKey = 'created_at';
+  static const String latitudeApiKey = 'latitude';
+  static const String longitudeApiKey = 'longitude';
 }

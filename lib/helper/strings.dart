@@ -99,9 +99,13 @@ class StringRes {
   static const String typeOfSeed = "બીજ નો પ્રકાર";
   static const String amountOfSeed = "બીજ નો જથ્થો";
   static const String dateOfPlanting = "વાવેતર ની તારીખ તથા તિથિ";
-  static const String dateOfGivenWater = "પાક માં આપેલ પાણી ની તારીખ";
+  static const String waterAndFertilizerDetails =
+      "પાક માં આપેલ પાણી અને ખાતર ની વિગતો";
+  static const String dateOfGivenWater = "પાણી ની તારીખ";
   static const String detailsOfFertilizer =
       "પાણી સાથે આપેલ ખાતર નુ નામ , જથ્થો , તારીખ";
+  static const String nameOfFertilizer = "ખાતર નુ નામ";
+  static const String quantityOfFertilizer = "ખાતર નો જથ્થો";
   static const String amountOfCompost = "પાક માં આપેલ કંપોસ્ટ ખાતર નો જથ્થો";
   static const String detailsOfPlantation = "વાવેતર ની વિગતો";
 

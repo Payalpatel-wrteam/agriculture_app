@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/new_application_cubit.dart';
@@ -50,8 +52,6 @@ class NewApplicationScreen extends StatefulWidget {
 
 class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController farmnerNameTxtController = TextEditingController();
-  TextEditingController villageTxtController = TextEditingController();
-  TextEditingController talukaTxtController = TextEditingController();
   TextEditingController mobileTxtController = TextEditingController();
   TextEditingController allocatedLandAreaTxtController =
       TextEditingController();
@@ -63,9 +63,13 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController amountOfSeedTxtController = TextEditingController();
   TextEditingController dateOfPlantingTxtController = TextEditingController();
   TextEditingController amountOfCompostTxtController = TextEditingController();
-  TextEditingController dateOfGivenWaterTxtController = TextEditingController();
-  TextEditingController detailsOfFertilizerTxtController =
-      TextEditingController();
+  // TextEditingController dateOfGivenWaterTxtController = TextEditingController();
+  // TextEditingController detailsOfFertilizerTxtController =
+  //     TextEditingController();
+  final List<TextEditingController> dateOfGivenWaterTxtController = [];
+  final List<TextEditingController> nameOfFetrtilizerController = [];
+  final List<TextEditingController> quanityOfFetrtilizerController = [];
+  int numberOfTextFields = 1;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _autoValidate = false;
@@ -77,48 +81,26 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   List<Districts> districtList = [];
   List<String> villageList = [];
   String? _currentAddress;
+  double? _currentLatitude;
+  double? _currentLongitude;
   Position? _currentPosition;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
   static CameraPosition? _kGooglePlex;
   List<Placemark>? placemarks;
-  void initializeControllers() {
-    print('is Edit Page==${widget.isEditPage}');
-    if (widget.isEditPage == true) {
-      farmnerNameTxtController.text = widget.farmDetails!.farmerName!;
-      villageTxtController.text = widget.farmDetails!.village!;
-      talukaTxtController.text = widget.farmDetails!.taluka!;
-      mobileTxtController.text = widget.farmDetails!.mobile!;
-      allocatedLandAreaTxtController.text =
-          widget.farmDetails!.allocatedLandArea!;
-      noOfTreesOnRidgeTxtController.text =
-          widget.farmDetails!.noOfTreesOnRidge!;
-      grownCropsTxtController.text =
-          widget.farmDetails!.cropsGrownInTheSurroundingFarm!;
-      locationOfFarmTxtController.text = widget.farmDetails!.locationOfFarm!;
-      plantedCropsTxtController.text =
-          widget.farmDetails!.theCropPlantedInTheScheme!;
-      typeOfSeedTxtController.text = widget.farmDetails!.typeOfSeed!;
-      amountOfSeedTxtController.text = widget.farmDetails!.amountOfSeed!;
-      dateOfPlantingTxtController.text =
-          widget.farmDetails!.dateOrDateOfPlanting!;
-      amountOfCompostTxtController.text = widget.farmDetails!.amountOfCompost!;
-      dateOfGivenWaterTxtController.text =
-          widget.farmDetails!.dateOfGivenWater!;
-      detailsOfFertilizerTxtController.text =
-          widget.farmDetails!.detailsOfFertilizer!;
-    }
-  }
+  bool _isLaoding = true;
 
   @override
   void initState() {
     super.initState();
+    _kGooglePlex = null;
+    createControllers();
     initializeControllers();
     var list = DistrictsList().districts;
     districtList = list.map((model) => Districts.fromJson(model)).toList();
-    selectedTaluko = districtList.first.subDistrict!;
-    selectedVillage = districtList.first.villages!.first;
+    // selectedTaluko = districtList.first.subDistrict!;
+    // selectedVillage = districtList.first.villages!.first;
     Future.delayed(Duration.zero, () {
       context.read<AddNewApplicationCubit>().resetState();
     });
@@ -128,6 +110,51 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   void dispose() {
     changeStatusBarBrightnesss(Constants.lightTheme);
     super.dispose();
+  }
+
+  createControllers() {
+    for (var i = 0; i < numberOfTextFields; i++) {
+      dateOfGivenWaterTxtController.add(TextEditingController());
+      nameOfFetrtilizerController.add(TextEditingController());
+      quanityOfFetrtilizerController.add(TextEditingController());
+    }
+  }
+
+  void initializeControllers() {
+    print('is Edit Page==${widget.isEditPage}');
+    if (widget.isEditPage == true) {
+      farmnerNameTxtController.text = widget.farmDetails!.farmerName!;
+
+      selectedVillage = widget.farmDetails!.village!;
+      selectedTaluko = widget.farmDetails!.taluka!;
+      mobileTxtController.text = widget.farmDetails!.mobile!;
+      allocatedLandAreaTxtController.text =
+          widget.farmDetails!.allocatedLandArea!;
+      noOfTreesOnRidgeTxtController.text =
+          widget.farmDetails!.noOfTreesOnRidge!;
+      grownCropsTxtController.text =
+          widget.farmDetails!.cropsGrownInTheSurroundingFarm!;
+
+      plantedCropsTxtController.text =
+          widget.farmDetails!.theCropPlantedInTheScheme!;
+      typeOfSeedTxtController.text = widget.farmDetails!.typeOfSeed!;
+      amountOfSeedTxtController.text = widget.farmDetails!.amountOfSeed!;
+      dateOfPlantingTxtController.text =
+          widget.farmDetails!.dateOrDateOfPlanting!;
+      amountOfCompostTxtController.text = widget.farmDetails!.amountOfCompost!;
+      // dateOfGivenWaterTxtController.text =
+      //     widget.farmDetails!.dateOfGivenWater!;
+      // detailsOfFertilizerTxtController.text =
+      //     widget.farmDetails!.detailsOfFertilizer!;
+      Map position = jsonDecode(widget.farmDetails!.locationOfFarm!);
+      _currentLatitude = position[ApiConstants.latitudeApiKey];
+      _currentLongitude = position[ApiConstants.longitudeApiKey];
+      _kGooglePlex = CameraPosition(
+        target: LatLng(_currentLatitude!, _currentLongitude!),
+        zoom: 17.4746,
+      );
+      _getAddressFromLatLng(_currentLatitude!, _currentLongitude!);
+    }
   }
 
   @override
@@ -156,7 +183,6 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         inputWidget(
-          attribute: ApiConstants.farmerNameApiKey,
           textEditingController: farmnerNameTxtController,
           textInputAction: TextInputType.name,
           hint: StringRes.farmerName,
@@ -170,11 +196,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             text: StringRes.taluka,
             selectedValue: selectedTaluko,
             onChanged: (value) {
-              print('change of district==$selectedTaluko');
               setState(() {
                 selectedTaluko = value.toString();
-                selectedVillage = defaultSelectedVillage;
+                // selectedVillage = defaultSelectedVillage;
               });
+              print('change of district==$selectedTaluko');
             },
             items: districtList.map((item) {
               return DropdownMenuItem(
@@ -185,10 +211,10 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             text: StringRes.village,
             selectedValue: selectedVillage,
             onChanged: (value) {
-              print('change of village==$selectedVillage');
               setState(() {
                 selectedVillage = value.toString();
               });
+              print('change of village==$selectedVillage');
             },
             items: selectedTaluko.isNotEmpty
                 ? districtList
@@ -200,7 +226,6 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                   }).toList()
                 : null),
         inputWidget(
-            attribute: ApiConstants.mobileApiKey,
             textEditingController: mobileTxtController,
             textInputAction: TextInputType.number,
             hint: StringRes.mobile,
@@ -208,7 +233,6 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             isPhoneNumber: true,
             validator: (value) => Validator.validatePhoneNumber(value)),
         inputWidget(
-          attribute: ApiConstants.allocatedLandAreaApiKey,
           textEditingController: allocatedLandAreaTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.allocatedLandArea,
@@ -217,54 +241,39 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         GestureDetector(
           onTap: _getCurrentPosition,
           child: inputWidget(
-              attribute: ApiConstants.locationOfFarmApiKey,
               textEditingController: locationOfFarmTxtController,
               textInputAction: TextInputType.name,
               hint: StringRes.locationOfFarm,
               title: StringRes.locationOfFarm,
               isReadOnly: true),
         ),
-        if (_kGooglePlex != null && _currentPosition != null) _buildGoogleMap(),
+        if (_kGooglePlex != null) _buildGoogleMap(),
         inputWidget(
-          attribute: ApiConstants.noOfTreesOnRidgeApiKey,
           textEditingController: noOfTreesOnRidgeTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.noOfTreesOnRidge,
           title: StringRes.noOfTreesOnRidge,
         ),
         inputWidget(
-            attribute: ApiConstants.grownCropsApiKey,
             textEditingController: grownCropsTxtController,
             textInputAction: TextInputType.multiline,
             hint: StringRes.grownCrops,
             title: StringRes.grownCrops,
             maxLines: 5),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 20),
-          child: AppText(
-            text: StringRes.detailsOfPlantation,
-            size: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.blackColor,
-            textDecoration: TextDecoration.underline,
-          ),
-        ),
+        _buildSectionHeader(StringRes.detailsOfPlantation),
         inputWidget(
-          attribute: ApiConstants.plantedCropsApiKey,
           textEditingController: plantedCropsTxtController,
           textInputAction: TextInputType.name,
           hint: StringRes.plantedCrops,
           title: StringRes.plantedCrops,
         ),
         inputWidget(
-          attribute: ApiConstants.typeOfSeedApiKey,
           textEditingController: typeOfSeedTxtController,
           textInputAction: TextInputType.name,
           hint: StringRes.typeOfSeed,
           title: StringRes.typeOfSeed,
         ),
         inputWidget(
-          attribute: ApiConstants.amountOfSeedApiKey,
           textEditingController: amountOfSeedTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.amountOfSeed,
@@ -284,51 +293,68 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             } else {}
           },
           child: inputWidget(
-              attribute: ApiConstants.dateOfPlantingApiKey,
               textEditingController: dateOfPlantingTxtController,
               textInputAction: TextInputType.name,
               hint: StringRes.dateOfPlanting,
               title: StringRes.dateOfPlanting,
               isReadOnly: true),
         ),
-        GestureDetector(
-          onTap: () async {
-            givenWaterDate = await openDatePicker(context);
 
-            if (givenWaterDate != null) {
-              formattedDate = DateFormat('dd-MM-yyyy').format(givenWaterDate!);
-
-              setState(() {
-                dateOfGivenWaterTxtController.text =
-                    formattedDate; //set output date to TextField value.
-              });
-            } else {}
-          },
-          child: inputWidget(
-              attribute: ApiConstants.dateOfGivenWaterApiKey,
-              textEditingController: dateOfGivenWaterTxtController,
-              textInputAction: TextInputType.name,
-              hint: StringRes.dateOfGivenWater,
-              title: StringRes.dateOfGivenWater,
-              isReadOnly: true),
-        ),
         inputWidget(
-            attribute: ApiConstants.detailsOfFertilizerApiKey,
-            textEditingController: detailsOfFertilizerTxtController,
-            textInputAction: TextInputType.multiline,
-            hint: StringRes.detailsOfFertilizer,
-            title: StringRes.detailsOfFertilizer,
-            maxLines: 5),
-        inputWidget(
-          attribute: ApiConstants.amountOfCompostApiKey,
           textEditingController: amountOfCompostTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.amountOfCompost,
           title: StringRes.amountOfCompost,
         ),
+        _buildSectionHeader(StringRes.waterAndFertilizerDetails),
+        _buildWaterDetailHeaders(),
+        for (int i = 0; i < numberOfTextFields; i++) _buildGivenWaterDetails(i),
+        smallSizedBox(),
+        _buildAddMore(),
         defaultSizedBox(),
         _buildSubmitButton(context)
       ],
+    );
+  }
+
+  Row _buildWaterDetailHeaders() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        Expanded(
+            child: AppText(
+          text: StringRes.dateOfGivenWater,
+        )),
+        SizedBox(
+          width: 5,
+        ),
+        Expanded(
+            child: AppText(
+          text: StringRes.nameOfFertilizer,
+        )),
+        SizedBox(
+          width: 5,
+        ),
+        Expanded(
+            child: AppText(
+          text: StringRes.quantityOfFertilizer,
+        ))
+      ],
+    );
+  }
+
+  Padding _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: AppText(
+        text: title,
+        size: 20,
+        fontWeight: FontWeight.bold,
+        color: AppColors.blackColor,
+        textDecoration: TextDecoration.underline,
+        overflow: TextOverflow.visible,
+      ),
     );
   }
 
@@ -383,6 +409,17 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                 if (state is AddNewApplicationInProgress) {
                   return;
                 } else {
+                  final List<Map<String, dynamic>> waterDetailsMap = [];
+
+                  for (int i = 0; i < numberOfTextFields; i++) {
+                    final Map<String, dynamic> currentValue = {
+                      'date': dateOfGivenWaterTxtController[i].text.trim(),
+                      'name': nameOfFetrtilizerController[i].text.trim(),
+                      'quantity': quanityOfFetrtilizerController[i].text.trim(),
+                    };
+                    waterDetailsMap.add(currentValue);
+                  }
+
                   if (_validateInput()) {
                     Map<String, dynamic> map = {
                       ApiConstants.userIdApiKey:
@@ -395,8 +432,10 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                           mobileTxtController.text.trim(),
                       ApiConstants.allocatedLandAreaApiKey:
                           allocatedLandAreaTxtController.text.trim(),
-                      ApiConstants.locationOfFarmApiKey:
-                          locationOfFarmTxtController.text.trim(),
+                      ApiConstants.locationOfFarmApiKey: jsonEncode({
+                        ApiConstants.latitudeApiKey: _currentLatitude,
+                        ApiConstants.longitudeApiKey: _currentLongitude
+                      }),
                       ApiConstants.noOfTreesOnRidgeApiKey:
                           noOfTreesOnRidgeTxtController.text.trim(),
                       ApiConstants.grownCropsApiKey:
@@ -409,12 +448,13 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                           amountOfSeedTxtController.text.trim(),
                       ApiConstants.dateOfPlantingApiKey:
                           dateOfPlantingTxtController.text.trim(),
-                      ApiConstants.dateOfGivenWaterApiKey:
-                          dateOfGivenWaterTxtController.text.trim(),
-                      ApiConstants.detailsOfFertilizerApiKey:
-                          detailsOfFertilizerTxtController.text.trim(),
+                      // ApiConstants.dateOfGivenWaterApiKey:
+                      //     dateOfGivenWaterTxtController.text.trim(),
+                      // ApiConstants.detailsOfFertilizerApiKey:
+                      //     detailsOfFertilizerTxtController.text.trim(),
                       ApiConstants.amountOfCompostApiKey:
                           amountOfCompostTxtController.text.trim(),
+                      ApiConstants.dateOfGivenWaterApiKey: waterDetailsMap
                     };
 
                     if (widget.isEditPage == true) {
@@ -446,6 +486,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       setState(() {
         _autoValidate = true;
       });
+      showSnackBar(context, 'Please fill up required fields.');
       return false;
     }
   }
@@ -481,6 +522,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
     final hasPermission = await _handleLocationPermission();
     print('has permission--$hasPermission');
     if (!hasPermission) return;
+    fullScreenProgress(context);
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
       setState(() {
@@ -489,9 +531,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           target: LatLng(position.latitude, position.longitude),
           zoom: 17.4746,
         );
-        _getAddressFromLatLng(position);
-        _currentPosition = position;
+        _currentLatitude = position.latitude;
+        _currentLongitude = position.longitude;
+        _getAddressFromLatLng(position.latitude, position.longitude);
       });
+      dismissProgressDialog(context);
     }).catchError((e) {
       print(e.toString());
     });
@@ -511,8 +555,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
     );
   }
 
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(position.latitude, position.longitude)
+  Future<void> _getAddressFromLatLng(double latitude, double longitude) async {
+    await placemarkFromCoordinates(latitude, longitude)
         .then((List<Placemark> placemarks) {
       Placemark place = placemarks[0];
       setState(() {
@@ -523,4 +567,75 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       debugPrint(e);
     });
   }
+
+  _buildGivenWaterDetails(int i) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(child: _buildWaterDateField(i)),
+        const SizedBox(
+          width: 5,
+        ),
+        Expanded(child: _buildNameOfFertilizerField(i)),
+        const SizedBox(
+          width: 5,
+        ),
+        Expanded(child: _buildquantityOfFertilizerField(i))
+      ],
+    );
+  }
+
+  _buildWaterDateField(int index) {
+    return GestureDetector(
+      onTap: () async {
+        givenWaterDate = await openDatePicker(context);
+
+        if (givenWaterDate != null) {
+          formattedDate = DateFormat('dd-MM-yyyy').format(givenWaterDate!);
+
+          setState(() {
+            dateOfGivenWaterTxtController[index].text =
+                formattedDate; //set output date to TextField value.
+          });
+        } else {}
+      },
+      child: inputWidget(
+          textEditingController: dateOfGivenWaterTxtController[index],
+          textInputAction: TextInputType.name,
+          hint: StringRes.dateOfGivenWater,
+          title: '',
+          isReadOnly: true,
+          contentPadiing: 5),
+    );
+  }
+
+  _buildNameOfFertilizerField(int index) {
+    return inputWidget(
+        textEditingController: nameOfFetrtilizerController[index],
+        textInputAction: TextInputType.name,
+        hint: StringRes.nameOfFertilizer,
+        title: '',
+        maxLines: 2,
+        contentPadiing: 5);
+  }
+
+  _buildquantityOfFertilizerField(int index) {
+    return inputWidget(
+        textEditingController: quanityOfFetrtilizerController[index],
+        textInputAction: TextInputType.number,
+        hint: StringRes.quantityOfFertilizer,
+        title: '',
+        contentPadiing: 5);
+  }
+
+  Widget _buildAddMore() => ElevatedButton(
+        onPressed: () {
+          setState(() {
+            numberOfTextFields++;
+            createControllers();
+          });
+        },
+        child: const Text('Add new detail'),
+      );
 }

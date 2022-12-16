@@ -186,7 +186,7 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
         separatorBuilder: (context, index) => const SizedBox(
           height: 15,
         ),
-        clipBehavior: Clip.none,
+        // clipBehavior: Clip.none,
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(vertical: 10),
         itemCount: farmDetails.length,

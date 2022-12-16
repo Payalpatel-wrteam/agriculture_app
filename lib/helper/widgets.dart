@@ -82,13 +82,13 @@ Widget buildTextButton(Widget child, VoidCallback onPressed) {
 }
 
 Widget inputWidget(
-    {required String attribute,
-    required TextEditingController textEditingController,
+    {required TextEditingController textEditingController,
     required TextInputType textInputAction,
     required String hint,
     required String title,
     int? maxLines,
     Function? validator,
+    double? contentPadiing = 15,
     bool isPhoneNumber = false,
     bool isReadOnly = false,
     bool isDropDown = false}) {
@@ -113,6 +113,8 @@ Widget inputWidget(
           child: IgnorePointer(
             ignoring: isReadOnly,
             child: TextFormField(
+              textInputAction: TextInputAction.next,
+              autofocus: true,
               validator: (value) {
                 {
                   if (value!.isEmpty) {
@@ -136,7 +138,7 @@ Widget inputWidget(
               readOnly: isReadOnly,
               style: const TextStyle(color: AppColors.blackColor),
               decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(15),
+                  contentPadding: EdgeInsets.all(contentPadiing!),
                   hintText: hint,
                   border: InputBorder.none,
                   // suffixIcon: isDropDown ? Image.asset() : null,
@@ -169,7 +171,7 @@ Widget dropwdownWidget(
             margin: const EdgeInsets.only(top: 5),
             padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
-                color: AppColors.whiteColor,
+                // color: AppColors.whiteColor,
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 border: Border.all(
                   color: AppColors.greyColor!,
@@ -182,21 +184,46 @@ Widget dropwdownWidget(
               icon: Icon(Icons.keyboard_arrow_down_sharp,
                   color: AppColors.greyColor), //dropdown indicator icon
 
-              hint: Text(hintText),
+              hint: selectedValue == ''
+                  ? Text(
+                      hintText,
+                      style: TextStyle(color: AppColors.greyColor),
+                    )
+                  : Text(selectedValue,
+                      style: TextStyle(color: AppColors.blackColor)),
               underline: const SizedBox(),
               borderRadius: const BorderRadius.all(Radius.circular(10)),
-              // decoration: InputDecoration(
-              //     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-              //     border: InputBorder.none,
-              //     hintStyle:
-              //         TextStyle(color: AppColors.greyColor, fontSize: 14)),
-              value: selectedValue.isNotEmpty ? selectedValue : null,
+
+              // value: selectedValue,
               onChanged: onChanged,
               items: items,
             ),
           )
         ]),
   );
+}
+
+void fullScreenProgress(BuildContext context) {
+  showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          child: Container(
+            alignment: Alignment.bottomCenter,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          onWillPop: () async {
+            return false;
+          },
+        );
+      });
+}
+
+dismissProgressDialog(BuildContext context) {
+  Navigator.of(context, rootNavigator: true).pop();
 }
 
 openDatePicker(BuildContext context) {
@@ -332,7 +359,7 @@ Future<bool> navigateBack(BuildContext context, String message,
                 },
                 child: AppText(
                   text: StringRes.no,
-                  color: Theme.of(context).secondaryHeaderColor,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
               TextButton(
@@ -345,7 +372,7 @@ Future<bool> navigateBack(BuildContext context, String message,
                 },
                 child: AppText(
                   text: StringRes.yes,
-                  color: Theme.of(context).secondaryHeaderColor,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ],

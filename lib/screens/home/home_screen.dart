@@ -170,12 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                      onPressed: () => context.read<AuthCubit>().signOut(),
-                      icon: const Icon(
-                        Icons.logout,
-                        color: AppColors.whiteColor,
-                      ))
+                  _buildLogoutButton()
                 ],
               ),
               SizedBox(
@@ -231,6 +226,48 @@ class _HomeScreenState extends State<HomeScreen> {
         // ),
       ],
     );
+  }
+
+  IconButton _buildLogoutButton() {
+    return IconButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: const AppText(
+                      text: 'Are you sure you want to logout of the app?',
+                      overflow: TextOverflow.visible,
+                      color: AppColors.blackColor,
+                      lineSpacing: 1.5,
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: AppText(
+                          text: StringRes.no,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+
+                          context.read<AuthCubit>().signOut();
+                        },
+                        child: AppText(
+                          text: StringRes.yes,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
+                  ));
+        },
+        icon: const Icon(
+          Icons.logout,
+          color: AppColors.whiteColor,
+        ));
   }
 
   _buildNewApplicationButton() {
