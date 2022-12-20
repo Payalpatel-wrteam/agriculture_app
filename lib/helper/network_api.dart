@@ -57,14 +57,14 @@ class ApiBaseHelper {
       if (response != null) {
         responseJson = getJsonResponse(response);
       } else {
-        throw Exception(StringRes.defaultErrorMessage);
+        throw CustomException(StringRes.defaultErrorMessage);
       }
     } on SocketException {
       throw FetchDataException(StringRes.noInternetErrorMessage);
     } on TimeoutException {
       throw FetchDataException(StringRes.defaultErrorMessage);
     } on Exception catch (e) {
-      throw Exception(StringRes.defaultErrorMessage);
+      throw CustomException(StringRes.defaultErrorMessage);
     }
 
     return responseJson;
@@ -74,6 +74,7 @@ class ApiBaseHelper {
     switch (response.statusCode) {
       case 200:
         var responseJson = json.decode(response.body);
+        print('---api response---$responseJson--');
         return responseJson;
       case 400:
         throw BadRequestException(response.body.toString());

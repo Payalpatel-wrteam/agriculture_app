@@ -29,13 +29,10 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
   GetFarmDetailsCubit() : super(GetFarmDetailsInitial());
 
   void getFarmDetails({
-    required String userId,
+    required Map<String, String> params,
   }) {
     emit(GetFarmDetailsInProgress());
-    farmerRepository.getFarmDetails(parameter: {
-      ApiConstants.userIdApiKey: userId,
-      ApiConstants.limitAPiKey: Constants.paginationLimit.toString()
-    }).then((value) {
+    farmerRepository.getFarmDetails(parameter: params).then((value) {
       var list = value[Constants.data] as List<dynamic>;
 
       final data = list.map((model) => FarmDetails.fromJson(model)).toList();
@@ -52,9 +49,6 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
     });
   }
 
- 
-
-
   resetState() {
     emit(GetFarmDetailsInitial());
   }
@@ -63,6 +57,7 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
       {required List<FarmDetails> farmDetails,
       required int totalData,
       required bool hasMore}) {
+    print('in success state==${farmDetails.length}==$totalData==$hasMore');
     emit(GetFarmDetailsSuccess(farmDetails, totalData, hasMore));
   }
 }

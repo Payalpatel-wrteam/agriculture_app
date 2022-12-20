@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/new_application_cubit.dart';
@@ -50,6 +49,8 @@ class NewApplicationScreen extends StatefulWidget {
   }
 }
 
+List<Districts> districtList = [];
+
 class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController farmnerNameTxtController = TextEditingController();
   TextEditingController mobileTxtController = TextEditingController();
@@ -63,9 +64,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController amountOfSeedTxtController = TextEditingController();
   TextEditingController dateOfPlantingTxtController = TextEditingController();
   TextEditingController amountOfCompostTxtController = TextEditingController();
-  // TextEditingController dateOfGivenWaterTxtController = TextEditingController();
-  // TextEditingController detailsOfFertilizerTxtController =
-  //     TextEditingController();
+
   final List<TextEditingController> dateOfGivenWaterTxtController = [];
   final List<TextEditingController> nameOfFetrtilizerController = [];
   final List<TextEditingController> quanityOfFetrtilizerController = [];
@@ -78,7 +77,6 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       defaultSelectedDistrict = 'Select District';
   String formattedDate = '', selectedTaluko = '', selectedVillage = '';
 
-  List<Districts> districtList = [];
   List<String> villageList = [];
   String? _currentAddress;
   double? _currentLatitude;
@@ -90,20 +88,20 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   static CameraPosition? _kGooglePlex;
   List<Placemark>? placemarks;
   bool _isLaoding = true;
+  FertilizerDetail? fertilizerDetail;
 
   @override
   void initState() {
     super.initState();
     _kGooglePlex = null;
-    createControllers();
-    initializeControllers();
-    var list = DistrictsList().districts;
-    districtList = list.map((model) => Districts.fromJson(model)).toList();
-    // selectedTaluko = districtList.first.subDistrict!;
-    // selectedVillage = districtList.first.villages!.first;
+    if (widget.isEditPage == false) createControllers();
+
+    selectedTaluko = districtList.first.subDistrict!;
+    selectedVillage = districtList.first.villages!.first;
     Future.delayed(Duration.zero, () {
       context.read<AddNewApplicationCubit>().resetState();
     });
+    initializeControllers();
   }
 
   @override
@@ -123,6 +121,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   void initializeControllers() {
     print('is Edit Page==${widget.isEditPage}');
     if (widget.isEditPage == true) {
+      print(
+          'fertilizer controller lengh==${widget.farmDetails!.detailsOfFertilizer!.length}');
       farmnerNameTxtController.text = widget.farmDetails!.farmerName!;
 
       selectedVillage = widget.farmDetails!.village!;
@@ -142,10 +142,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       dateOfPlantingTxtController.text =
           widget.farmDetails!.dateOrDateOfPlanting!;
       amountOfCompostTxtController.text = widget.farmDetails!.amountOfCompost!;
-      // dateOfGivenWaterTxtController.text =
-      //     widget.farmDetails!.dateOfGivenWater!;
-      // detailsOfFertilizerTxtController.text =
-      //     widget.farmDetails!.detailsOfFertilizer!;
+
       Map position = jsonDecode(widget.farmDetails!.locationOfFarm!);
       _currentLatitude = position[ApiConstants.latitudeApiKey];
       _currentLongitude = position[ApiConstants.longitudeApiKey];
@@ -154,6 +151,20 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         zoom: 17.4746,
       );
       _getAddressFromLatLng(_currentLatitude!, _currentLongitude!);
+      numberOfTextFields = widget.farmDetails!.detailsOfFertilizer!.length;
+      for (var i = 0;
+          i < widget.farmDetails!.detailsOfFertilizer!.length;
+          i++) {
+        fertilizerDetail = widget.farmDetails!.detailsOfFertilizer![i];
+        print(
+            '${fertilizerDetail!.date}==${fertilizerDetail!.name}==${fertilizerDetail!.quantity}');
+        dateOfGivenWaterTxtController
+            .add(TextEditingController(text: fertilizerDetail!.date));
+        nameOfFetrtilizerController
+            .add(TextEditingController(text: fertilizerDetail!.name));
+        quanityOfFetrtilizerController
+            .add(TextEditingController(text: fertilizerDetail!.quantity));
+      }
     }
   }
 
@@ -199,6 +210,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               setState(() {
                 selectedTaluko = value.toString();
                 // selectedVillage = defaultSelectedVillage;
+                selectedVillage = districtList
+                    .firstWhere(
+                        (element) => element.subDistrict == selectedTaluko)
+                    .villages!
+                    .first;
               });
               print('change of district==$selectedTaluko');
             },
@@ -211,9 +227,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             text: StringRes.village,
             selectedValue: selectedVillage,
             onChanged: (value) {
+              print('check null ==${_formKey.currentState == null}');
               setState(() {
                 selectedVillage = value.toString();
               });
+              print('check null ==${_formKey.currentState == null}');
               print('change of village==$selectedVillage');
             },
             items: selectedTaluko.isNotEmpty
@@ -361,33 +379,33 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   _buildSubmitButton(BuildContext context) {
     return BlocConsumer<AddNewApplicationCubit, AddNewApplicationState>(
       listener: (context, state) {
-        print('add new detail state--$state');
         if (state is AddNewApplicationFailure) {
+          print('add new detail state--${state.errorMessage}');
           showSnackBar(_scaffoldKey.currentContext!, state.errorMessage);
         }
         if (state is AddNewApplicationSuccess) {
-          if (context.read<GetFarmDetailsCubit>().state
-              is GetFarmDetailsSuccess) {
-            List<FarmDetails> farmDetails = (context
-                    .read<GetFarmDetailsCubit>()
-                    .state as GetFarmDetailsSuccess)
-                .farmDetails;
-            final index = farmDetails
-                .indexWhere((element) => element.id == state.farmDetails.id);
-            if (index != -1) {
-              farmDetails[index] = state.farmDetails;
-            } else {
-              farmDetails.insert(0, state.farmDetails);
-            }
-            context.read<GetFarmDetailsCubit>().emitSuccessState(
-                farmDetails: farmDetails,
-                totalData: (context.read<GetFarmDetailsCubit>().state
-                        as GetFarmDetailsSuccess)
-                    .totalData,
-                hasMore: (context.read<GetFarmDetailsCubit>().state
-                        as GetFarmDetailsSuccess)
-                    .hasMore);
+          List<FarmDetails> farmDetails = [];
+          int totalData = 0;
+          bool hasMore = false;
+          GetFarmDetailsCubit getCubit = context.read<GetFarmDetailsCubit>();
+          if (getCubit.state is GetFarmDetailsSuccess) {
+            farmDetails = (getCubit.state as GetFarmDetailsSuccess).farmDetails;
+            totalData = (getCubit.state as GetFarmDetailsSuccess).totalData;
+            hasMore = (getCubit.state as GetFarmDetailsSuccess).hasMore;
           }
+          final index = farmDetails
+              .indexWhere((element) => element.id == state.farmDetails.id);
+          if (index != -1) {
+            farmDetails[index] = state.farmDetails;
+          } else {
+            farmDetails.insert(0, state.farmDetails);
+            totalData = totalData + 1;
+            hasMore = totalData > farmDetails.length;
+          }
+          print('farm details==$farmDetails==$totalData==$hasMore');
+          getCubit.emitSuccessState(
+              farmDetails: farmDetails, totalData: totalData, hasMore: hasMore);
+
           showSnackBar(_scaffoldKey.currentContext!, state.successMessage);
           Navigator.of(context).pop();
         }
@@ -404,6 +422,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               color: AppColors.whiteColor,
             ),
             onPressed: () {
+              Map<String, dynamic> map = {};
               FocusScope.of(context).unfocus();
               if (context.read<AuthCubit>().state is Authenticated) {
                 if (state is AddNewApplicationInProgress) {
@@ -411,17 +430,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                 } else {
                   final List<Map<String, dynamic>> waterDetailsMap = [];
 
-                  for (int i = 0; i < numberOfTextFields; i++) {
-                    final Map<String, dynamic> currentValue = {
-                      'date': dateOfGivenWaterTxtController[i].text.trim(),
-                      'name': nameOfFetrtilizerController[i].text.trim(),
-                      'quantity': quanityOfFetrtilizerController[i].text.trim(),
-                    };
-                    waterDetailsMap.add(currentValue);
-                  }
-
                   if (_validateInput()) {
-                    Map<String, dynamic> map = {
+                    map = {
                       ApiConstants.userIdApiKey:
                           context.read<UserDetailsCubit>().getUserId(),
                       ApiConstants.farmerNameApiKey:
@@ -448,14 +458,26 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                           amountOfSeedTxtController.text.trim(),
                       ApiConstants.dateOfPlantingApiKey:
                           dateOfPlantingTxtController.text.trim(),
-                      // ApiConstants.dateOfGivenWaterApiKey:
-                      //     dateOfGivenWaterTxtController.text.trim(),
-                      // ApiConstants.detailsOfFertilizerApiKey:
-                      //     detailsOfFertilizerTxtController.text.trim(),
                       ApiConstants.amountOfCompostApiKey:
                           amountOfCompostTxtController.text.trim(),
-                      ApiConstants.dateOfGivenWaterApiKey: waterDetailsMap
                     };
+                    for (int i = 0; i < numberOfTextFields; i++) {
+                      String key =
+                          '${ApiConstants.fertilizerDetailsApiKey}${[i]}';
+                      if (widget.isEditPage! &&
+                          i < widget.farmDetails!.detailsOfFertilizer!.length) {
+                        map['$key${[ApiConstants.idAPiKey]}'] = widget
+                            .farmDetails!.detailsOfFertilizer![i].id
+                            .toString();
+                      }
+                      map['$key${[ApiConstants.dateOfAddWaterApiKey]}'] =
+                          dateOfGivenWaterTxtController[i].text.trim();
+
+                      map['$key${[ApiConstants.nameAPiKey]}'] =
+                          nameOfFetrtilizerController[i].text.trim();
+                      map['$key${[ApiConstants.quantityApiKey]}'] =
+                          quanityOfFetrtilizerController[i].text.trim();
+                    }
 
                     if (widget.isEditPage == true) {
                       map[Constants.id] = widget.farmDetails!.id.toString();
@@ -476,6 +498,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   }
 
   bool _validateInput() {
+    print('check null ==${_formKey.currentState == null}');
     if (_formKey.currentState!.validate()) {
       // If all data are correct then save data to out variables
       _formKey.currentState!.save();

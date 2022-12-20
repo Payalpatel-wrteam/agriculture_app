@@ -13,8 +13,7 @@ class FarmDetails {
   String? typeOfSeed;
   String? amountOfSeed;
   String? dateOrDateOfPlanting;
-  String? dateOfGivenWater;
-  String? detailsOfFertilizer;
+  List<FertilizerDetail>? detailsOfFertilizer;
   String? amountOfCompost;
   String? updatedAt;
   String? createdAt;
@@ -34,7 +33,6 @@ class FarmDetails {
       typeOfSeed,
       amountOfSeed,
       dateOrDateOfPlanting,
-      dateOfGivenWater,
       detailsOfFertilizer,
       amountOfCompost,
       updatedAt,
@@ -55,13 +53,18 @@ class FarmDetails {
     typeOfSeed = json[ApiConstants.typeOfSeedApiKey];
     amountOfSeed = json[ApiConstants.amountOfSeedApiKey];
     dateOrDateOfPlanting = json[ApiConstants.dateOfPlantingApiKey];
-    dateOfGivenWater = json[ApiConstants.dateOfGivenWaterApiKey];
-    detailsOfFertilizer = json[ApiConstants.detailsOfFertilizerApiKey];
+
     amountOfCompost = json[ApiConstants.amountOfCompostApiKey];
     updatedAt = json[ApiConstants.updatedAtApiKey] ?? '';
     createdAt = json[ApiConstants.createdAtApiKey] ?? '';
     id = json[ApiConstants.idAPiKey];
     deleteInProgress = false;
+    if (json[ApiConstants.fertilizerDetailsApiKey] != null) {
+      detailsOfFertilizer = <FertilizerDetail>[];
+      json[ApiConstants.fertilizerDetailsApiKey].forEach((v) {
+        detailsOfFertilizer!.add(FertilizerDetail.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -79,7 +82,6 @@ class FarmDetails {
     data['type_of_seed'] = typeOfSeed;
     data['amount_of_seed'] = amountOfSeed;
     data['date_or_date_of_planting'] = dateOrDateOfPlanting;
-    data['date_of_given_water'] = dateOfGivenWater;
     data['details_of_fertilizer'] = detailsOfFertilizer;
     data['amount_of_compost'] = amountOfCompost;
     data['updated_at'] = updatedAt;
@@ -87,4 +89,34 @@ class FarmDetails {
     data['id'] = id;
     return data;
   }
+}
+
+class FertilizerDetail {
+  int? id;
+  String? name;
+  String? date;
+  String? quantity;
+
+  FertilizerDetail({
+    this.id,
+    this.name,
+    this.date,
+    this.quantity,
+  });
+
+  FertilizerDetail.fromJson(Map<String, dynamic> json) {
+    id = json[ApiConstants.idAPiKey];
+    name = json[ApiConstants.nameAPiKey];
+    date = json[ApiConstants.dateOfAddWaterApiKey];
+    quantity = json[ApiConstants.quantityApiKey];
+  }
+  // Map<String, dynamic> toJson() {
+  //   final Map<String, dynamic> data = Map<String, dynamic>();
+  //   data['id'] = id;
+  //   data['s_id'] = sId;
+  //   data['image'] = image;
+  //   data['title'] = title;
+  //   data['des'] = des;
+  //   return data;
+  // }
 }

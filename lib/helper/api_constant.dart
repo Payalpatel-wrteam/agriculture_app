@@ -33,12 +33,14 @@ class ApiConstants {
   static const String plantedCropsApiKey = 'the_crop_planted_in_the_scheme';
   static const String typeOfSeedApiKey = 'type_of_seed';
   static const String amountOfSeedApiKey = 'amount_of_seed';
-  static const String dateOfPlantingApiKey = 'date_or_date_of_planting';
+  static const String dateOfPlantingApiKey = 'date_of_planting';
   static const String dateOfGivenWaterApiKey = 'date_of_given_water';
-  static const String detailsOfFertilizerApiKey = 'details_of_fertilizer';
+  static const String fertilizerDetailsApiKey = 'fertilizerdetails';
   static const String amountOfCompostApiKey = 'amount_of_compost';
   static const String updatedAtApiKey = 'updated_at';
   static const String createdAtApiKey = 'created_at';
   static const String latitudeApiKey = 'latitude';
   static const String longitudeApiKey = 'longitude';
+  static const String quantityApiKey = 'quantity';
+  static const String dateOfAddWaterApiKey = 'date_of_add_water';
 }

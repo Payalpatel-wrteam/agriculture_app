@@ -90,7 +90,7 @@ class AuthRepository {
     } on PlatformException catch (e) {
       throw CustomException(StringRes.noInternetErrorMessage);
     } catch (e) {
-      throw Exception(e.toString());
+      throw CustomException(e.toString());
     }
   }
 

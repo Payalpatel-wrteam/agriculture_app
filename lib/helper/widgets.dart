@@ -4,7 +4,7 @@ import 'package:agriculture_app/helper/strings.dart';
 import 'package:agriculture_app/helper/validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_html/flutter_html.dart';
+// import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../app/routes.dart';
@@ -47,16 +47,17 @@ Widget buildBackButton(BuildContext context, String style,
   );
 }
 
-Html buildHtmlContent(
+Widget buildHtmlContent(
   String text,
 ) {
-  return Html(
-    data: text,
-    defaultTextStyle: const TextStyle(
-      fontSize: 16,
-      color: AppColors.primaryColor,
-    ),
-  );
+  // return Html(
+  //   data: text,
+  //   defaultTextStyle: const TextStyle(
+  //     fontSize: 16,
+  //     color: AppColors.primaryColor,
+  //   ),
+  // );
+  return Container();
 }
 
 SizedBox defaultSizedBox() {
@@ -73,12 +74,11 @@ SizedBox smallSizedBox() {
 
 Widget buildTextButton(Widget child, VoidCallback onPressed) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    child: TextButton(
-      child: child,
-      onPressed: onPressed,
-    ),
-  );
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      child: GestureDetector(
+        onTap: onPressed,
+        child: child,
+      ));
 }
 
 Widget inputWidget(
@@ -164,9 +164,10 @@ Widget dropwdownWidget(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText(
-            text: text,
-          ),
+          if (text != '')
+            AppText(
+              text: text,
+            ),
           Container(
             margin: const EdgeInsets.only(top: 5),
             padding: const EdgeInsets.symmetric(horizontal: 15),

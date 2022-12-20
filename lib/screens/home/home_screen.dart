@@ -17,8 +17,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/routes.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/user_details_cubit.dart';
+import '../../data/models/disctricts.dart';
+import '../../helper/api_constant.dart';
 import '../../helper/widgets.dart';
 import '../screen_widgets.dart/error_screen.dart';
+import 'new_application_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -27,17 +30,23 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
+late Map<String, String> params;
+
 class _HomeScreenState extends State<HomeScreen> {
   Timer? apitimer;
   late Size size;
   bool _isLoading = false;
   GetFarmDetailsSuccess? getBlocState;
+  String selectedTaluko = '', selectedVillage = '';
+  List<String> villageList = [];
 
   @override
   void initState() {
     super.initState();
 
     getUserData();
+    // selectedTaluko = districtList.first.subDistrict!;
+    // selectedVillage = districtList.first.villages!.first;
   }
 
   @override
@@ -46,6 +55,13 @@ class _HomeScreenState extends State<HomeScreen> {
       apitimer!.cancel();
     }
     super.dispose();
+  }
+
+  initializeParameters() {
+    params = {
+      ApiConstants.userIdApiKey: context.read<UserDetailsCubit>().getUserId(),
+      ApiConstants.limitAPiKey: Constants.paginationLimit.toString()
+    };
   }
 
   getUserData() {
@@ -64,9 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   getFarmerData() {
-    context
-        .read<GetFarmDetailsCubit>()
-        .getFarmDetails(userId: context.read<UserDetailsCubit>().getUserId());
+    context.read<GetFarmDetailsCubit>().getFarmDetails(params: params);
   }
 
   callRetryApi() {
@@ -91,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (apitimer != null) {
             apitimer!.cancel();
           }
+          initializeParameters();
           getFarmerData();
         }
         if (state is UserDetailsFetchFailure) {
@@ -128,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Stack(
       children: [
         Container(
-          height: size.height * 0.27,
+          height: size.height * 0.22,
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             borderRadius: const BorderRadius.only(
@@ -146,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               SizedBox(
-                height: size.height * 0.02,
+                height: size.height * 0.015,
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -174,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               SizedBox(
-                height: size.height * 0.06,
+                height: size.height * 0.04,
               ),
               GestureDetector(
                 onTap: () => pushNewPage(context, Routes.newApplication),
@@ -205,7 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               defaultSizedBox(),
-              AppLargeText(
+              _builfFilter(),
+              const AppLargeText(
                 text: 'Application list',
                 color: Color(0xFF1e232a),
                 size: 20,
@@ -215,15 +231,108 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         )),
-        // Container(
-        //   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-        //   child: Column(
-        //     children: <Widget>[
-        //       _buildNewApplicationButton(),
-        //       const Expanded(child: BuildFarmerList())
-        //     ],
-        //   ),
-        // ),
+      ],
+    );
+  }
+
+  _builfFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const AppText(text: '${StringRes.filterBy}:'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: SizedBox(
+                width: size.width * 0.3,
+                child: dropwdownWidget(
+                    hintText: StringRes.taluka,
+                    text: '',
+                    selectedValue: selectedTaluko,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedTaluko = value.toString();
+                        selectedVillage = '';
+                        // selectedVillage = districtList
+                        //     .firstWhere(
+                        //         (element) => element.subDistrict == selectedTaluko)
+                        //     .villages!
+                        //     .first;
+                      });
+                      print('change of district==$selectedTaluko');
+                    },
+                    items: districtList.map((item) {
+                      return DropdownMenuItem(
+                          value: item.subDistrict,
+                          child: Text(item.subDistrict!));
+                    }).toList()),
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: SizedBox(
+                width: size.width * 0.3,
+                child: dropwdownWidget(
+                    hintText: StringRes.village,
+                    text: '',
+                    selectedValue: selectedVillage,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedVillage = value.toString();
+                      });
+
+                      print('change of village==$selectedVillage');
+                    },
+                    items: selectedTaluko.isNotEmpty
+                        ? districtList
+                            .firstWhere((element) =>
+                                element.subDistrict == selectedTaluko)
+                            .villages!
+                            .map((item) {
+                            return DropdownMenuItem(
+                                value: item, child: Text(item));
+                          }).toList()
+                        : null),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildTextButton(
+                    const AppText(
+                        text: 'Filter',
+                        textDecoration: TextDecoration.underline), () {
+                  params.remove(ApiConstants.talukaApiKey);
+                  params.remove(ApiConstants.villageApiKey);
+                  if (selectedTaluko != '') {
+                    params.addAll({ApiConstants.talukaApiKey: selectedTaluko});
+                  }
+                  if (selectedVillage != '') {
+                    params
+                        .addAll({ApiConstants.villageApiKey: selectedVillage});
+                  }
+                  getFarmerData();
+                }),
+                defaultSizedBox(),
+                buildTextButton(
+                    const AppText(
+                        text: 'All',
+                        textDecoration: TextDecoration.underline), () {
+                  params.remove(ApiConstants.talukaApiKey);
+                  params.remove(ApiConstants.villageApiKey);
+                  selectedTaluko = '';
+                  selectedVillage = '';
+                  setState(() {});
+                  getFarmerData();
+                }),
+              ],
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -268,14 +377,5 @@ class _HomeScreenState extends State<HomeScreen> {
           Icons.logout,
           color: AppColors.whiteColor,
         ));
-  }
-
-  _buildNewApplicationButton() {
-    return ResponsiveButton(
-        child: const AppText(
-          text: StringRes.addNewFarmerDetails,
-          color: AppColors.whiteColor,
-        ),
-        onPressed: () => pushNewPage(context, Routes.newApplication));
   }
 }

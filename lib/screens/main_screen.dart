@@ -9,8 +9,11 @@ import '../app/routes.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/user_details_cubit.dart';
 import '../cubits/farmerApplications/delete_farm_details_cubit.dart';
+import '../data/models/disctricts.dart';
+import '../data/models/districts_list.dart';
 import '../helper/constant.dart';
 import '../helper/strings.dart';
+import 'home/new_application_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -29,6 +32,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    var list = DistrictsList().districts;
+    districtList = list.map((model) => Districts.fromJson(model)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(

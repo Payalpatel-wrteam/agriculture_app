@@ -98,7 +98,7 @@ class StringRes {
   static const String plantedCrops = "યોજના માં વાવેતર કરેલ પાક નુ નામ";
   static const String typeOfSeed = "બીજ નો પ્રકાર";
   static const String amountOfSeed = "બીજ નો જથ્થો";
-  static const String dateOfPlanting = "વાવેતર ની તારીખ તથા તિથિ";
+  static const String dateOfPlanting = "વાવેતર ની તારીખ";
   static const String waterAndFertilizerDetails =
       "પાક માં આપેલ પાણી અને ખાતર ની વિગતો";
   static const String dateOfGivenWater = "પાણી ની તારીખ";
@@ -111,6 +111,7 @@ class StringRes {
 
   static const String edit = 'Edit';
   static const String hello = 'Hello';
+  static const String filterBy = 'Filter By';
 
   //******end*****farmer screen string **********
 }

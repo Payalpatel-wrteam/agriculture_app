@@ -60,6 +60,7 @@ class FarmerRepository {
     var getdata = await apiBaseHelper.postAPICall(
         param: {ApiConstants.idAPiKey: id},
         apiMethodUrl: ApiConstants.deleteFarmDetailsApiKey);
+    print(getdata);
     if (getdata != null) {
       bool error = getdata[Constants.error];
 
