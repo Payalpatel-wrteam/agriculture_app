@@ -587,7 +587,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             '${place.street}, ${place.subLocality},${place.subAdministrativeArea}, ${place.postalCode}';
       });
     }).catchError((e) {
-      debugPrint(e);
+      locationOfFarmTxtController.text = '$latitude $longitude';
     });
   }
 

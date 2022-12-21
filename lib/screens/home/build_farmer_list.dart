@@ -277,8 +277,42 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
             }
             return IconButton(
                 onPressed: () {
-                  context.read<DeleteFarmDetailsCubit>().deleteFarmDetails(
-                      id: farmDetails[index].id!, farmDetails: farmDetails);
+                  showDialog(
+                      context: context,
+                      builder: (bldcontext) => AlertDialog(
+                            title: const AppText(
+                              text: 'Are you sure you want delete this entry?',
+                              overflow: TextOverflow.visible,
+                              color: AppColors.blackColor,
+                              lineSpacing: 1.5,
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(bldcontext).pop();
+                                },
+                                child: AppText(
+                                  text: StringRes.no,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(bldcontext).pop();
+
+                                  context
+                                      .read<DeleteFarmDetailsCubit>()
+                                      .deleteFarmDetails(
+                                          id: farmDetails[index].id!,
+                                          farmDetails: farmDetails);
+                                },
+                                child: AppText(
+                                  text: StringRes.yes,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ),
+                            ],
+                          ));
                 },
                 icon: const Icon(
                   Icons.delete,

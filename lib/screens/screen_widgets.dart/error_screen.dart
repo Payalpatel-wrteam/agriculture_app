@@ -1,4 +1,5 @@
 import 'package:agriculture_app/helper/constant.dart';
+import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -27,6 +28,7 @@ class ErrorScreen extends StatelessWidget {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.05,
           ),
+
           const AppLargeText(
             text: StringRes.somethingWentWrong,
             size: 28,
@@ -39,17 +41,18 @@ class ErrorScreen extends StatelessWidget {
             color: AppColors.captionColor,
             overflow: TextOverflow.visible,
             lineSpacing: 1.5,
+            textAlign: TextAlign.center,
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.07,
           ),
-          // child ??
-          //     CircularGradientButton(
-          //         onPressed: onPressed,
-          //         child: const AppText(
-          //           text: StringRes.tryAgain,
-          //           color: whiteColor,
-          //         )),
+          child ??
+              ResponsiveButton(
+                  onPressed: onPressed,
+                  child: const AppText(
+                    text: StringRes.tryAgain,
+                    color: AppColors.whiteColor,
+                  )),
         ],
       ),
     );

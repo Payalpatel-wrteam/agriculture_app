@@ -130,7 +130,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     _buildSignupButton(),
 
                     // _buildAggreemetStatement(),
-                    const SizedBox(height: 10),
+                    defaultSizedBox(),
                     _buildAlreadyHaveAccountStatement()
                   ],
                 ),

@@ -83,6 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: AppLargeText(text: StringRes.signInLbl)),
               defaultSizedBox(),
               _buildEmailAndPassword(context),
+              defaultSizedBox(),
               _buildSignUpButton(context),
             ]),
           ),
