@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/cubits/farmerApplications/new_application_cubit.dart';
@@ -18,10 +19,12 @@ import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/scroll_behavior.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../cubits/auth/auth_cubit.dart';
@@ -64,6 +67,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   TextEditingController amountOfSeedTxtController = TextEditingController();
   TextEditingController dateOfPlantingTxtController = TextEditingController();
   TextEditingController amountOfCompostTxtController = TextEditingController();
+  TextEditingController villageTextController = TextEditingController();
 
   final List<TextEditingController> dateOfGivenWaterTxtController = [];
   final List<TextEditingController> nameOfFetrtilizerController = [];
@@ -89,15 +93,22 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   List<Placemark>? placemarks;
   bool _isLaoding = true;
   FertilizerDetail? fertilizerDetail;
-
+  final picker = ImagePicker();
+  File? selectedImage;
+  String profileUrl = '';
   @override
   void initState() {
     super.initState();
     _kGooglePlex = null;
+    selectedImage = null;
     if (widget.isEditPage == false) createControllers();
 
     selectedTaluko = districtList.first.subDistrict!;
-    selectedVillage = districtList.first.villages!.first;
+    villageList = districtList
+        .firstWhere((element) => element.subDistrict == selectedTaluko)
+        .villages!
+        .toList();
+    // selectedVillage = districtList.first.villages!.first;
     Future.delayed(Duration.zero, () {
       context.read<AddNewApplicationCubit>().resetState();
     });
@@ -106,7 +117,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
 
   @override
   void dispose() {
-    changeStatusBarBrightnesss(Constants.lightTheme);
+    SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light));
     super.dispose();
   }
 
@@ -121,11 +133,13 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   void initializeControllers() {
     print('is Edit Page==${widget.isEditPage}');
     if (widget.isEditPage == true) {
+      print('farm details==${widget.farmDetails!.toJson()}');
       print(
           'fertilizer controller lengh==${widget.farmDetails!.detailsOfFertilizer!.length}');
       farmnerNameTxtController.text = widget.farmDetails!.farmerName!;
-
+      profileUrl = widget.farmDetails!.image ?? '';
       selectedVillage = widget.farmDetails!.village!;
+      villageTextController.text = widget.farmDetails!.village!;
       selectedTaluko = widget.farmDetails!.taluka!;
       mobileTxtController.text = widget.farmDetails!.mobile!;
       allocatedLandAreaTxtController.text =
@@ -152,37 +166,55 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       );
       _getAddressFromLatLng(_currentLatitude!, _currentLongitude!);
       numberOfTextFields = widget.farmDetails!.detailsOfFertilizer!.length;
-      for (var i = 0;
-          i < widget.farmDetails!.detailsOfFertilizer!.length;
-          i++) {
-        fertilizerDetail = widget.farmDetails!.detailsOfFertilizer![i];
-        print(
-            '${fertilizerDetail!.date}==${fertilizerDetail!.name}==${fertilizerDetail!.quantity}');
-        dateOfGivenWaterTxtController
-            .add(TextEditingController(text: fertilizerDetail!.date));
-        nameOfFetrtilizerController
-            .add(TextEditingController(text: fertilizerDetail!.name));
-        quanityOfFetrtilizerController
-            .add(TextEditingController(text: fertilizerDetail!.quantity));
+      if (numberOfTextFields == 0) {
+        numberOfTextFields = 1;
+        createControllers();
+      } else {
+        for (var i = 0;
+            i < widget.farmDetails!.detailsOfFertilizer!.length;
+            i++) {
+          fertilizerDetail = widget.farmDetails!.detailsOfFertilizer![i];
+          print(
+              '${fertilizerDetail!.date}==${fertilizerDetail!.name}==${fertilizerDetail!.quantity}');
+          dateOfGivenWaterTxtController
+              .add(TextEditingController(text: fertilizerDetail!.date));
+          nameOfFetrtilizerController
+              .add(TextEditingController(text: fertilizerDetail!.name));
+          quanityOfFetrtilizerController
+              .add(TextEditingController(text: fertilizerDetail!.quantity));
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: buildAppbar(context, StringRes.addNewFarmerDetails),
-      body: ScrollConfiguration(
-        behavior: MyBehavior(),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: _autoValidate
-                ? AutovalidateMode.always
-                : AutovalidateMode.disabled,
-            child: _buildInputWidgets(context),
+    print('profile==$profileUrl==$selectedImage');
+    // for (int i = 0; i < districtList.length; i++) {
+    //   print('${districtList[i].villages}==${districtList[i].villages}');
+    // }
+    return WillPopScope(
+      onWillPop: () async {
+        if (context.read<AddNewApplicationCubit>().state
+            is AddNewApplicationInProgress) {
+          return Future.value(false);
+        }
+        return Future.value(true);
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: buildAppbar(context, StringRes.addNewFarmerDetails),
+        body: ScrollConfiguration(
+          behavior: MyBehavior(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: _autoValidate
+                  ? AutovalidateMode.always
+                  : AutovalidateMode.disabled,
+              child: _buildInputWidgets(context),
+            ),
           ),
         ),
       ),
@@ -193,6 +225,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        uploadFarmerProfile(),
+        const SizedBox(
+          height: 30,
+        ),
+
         inputWidget(
           textEditingController: farmnerNameTxtController,
           textInputAction: TextInputType.name,
@@ -210,11 +247,12 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               setState(() {
                 selectedTaluko = value.toString();
                 // selectedVillage = defaultSelectedVillage;
-                selectedVillage = districtList
+                villageList = districtList
                     .firstWhere(
                         (element) => element.subDistrict == selectedTaluko)
                     .villages!
-                    .first;
+                    .toList();
+                villageTextController.clear();
               });
               print('change of district==$selectedTaluko');
             },
@@ -222,27 +260,22 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               return DropdownMenuItem(
                   value: item.subDistrict, child: Text(item.subDistrict!));
             }).toList()),
-        dropwdownWidget(
-            hintText: StringRes.village,
-            text: StringRes.village,
-            selectedValue: selectedVillage,
-            onChanged: (value) {
-              print('check null ==${_formKey.currentState == null}');
-              setState(() {
-                selectedVillage = value.toString();
-              });
-              print('check null ==${_formKey.currentState == null}');
-              print('change of village==$selectedVillage');
+        inputWidget(
+            textEditingController: villageTextController,
+            textInputAction: TextInputType.text,
+            hint: StringRes.village,
+            title: StringRes.village,
+            onTap: () {
+              villageList.clear();
+
+              print("controller:${villageTextController.text.toString()}");
+              setState(
+                () {},
+              );
             },
-            items: selectedTaluko.isNotEmpty
-                ? districtList
-                    .firstWhere(
-                        (element) => element.subDistrict == selectedTaluko)
-                    .villages!
-                    .map((item) {
-                    return DropdownMenuItem(value: item, child: Text(item));
-                  }).toList()
-                : null),
+            onChanged: searchVillage),
+        villageList.isNotEmpty ? villageNameList() : const SizedBox(),
+
         inputWidget(
             textEditingController: mobileTxtController,
             textInputAction: TextInputType.number,
@@ -431,62 +464,79 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                   final List<Map<String, dynamic>> waterDetailsMap = [];
 
                   if (_validateInput()) {
-                    map = {
-                      ApiConstants.userIdApiKey:
-                          context.read<UserDetailsCubit>().getUserId(),
-                      ApiConstants.farmerNameApiKey:
-                          farmnerNameTxtController.text.trim(),
-                      ApiConstants.villageApiKey: selectedVillage,
-                      ApiConstants.talukaApiKey: selectedTaluko,
-                      ApiConstants.mobileApiKey:
-                          mobileTxtController.text.trim(),
-                      ApiConstants.allocatedLandAreaApiKey:
-                          allocatedLandAreaTxtController.text.trim(),
-                      ApiConstants.locationOfFarmApiKey: jsonEncode({
-                        ApiConstants.latitudeApiKey: _currentLatitude,
-                        ApiConstants.longitudeApiKey: _currentLongitude
-                      }),
-                      ApiConstants.noOfTreesOnRidgeApiKey:
-                          noOfTreesOnRidgeTxtController.text.trim(),
-                      ApiConstants.grownCropsApiKey:
-                          grownCropsTxtController.text.trim(),
-                      ApiConstants.plantedCropsApiKey:
-                          plantedCropsTxtController.text.trim(),
-                      ApiConstants.typeOfSeedApiKey:
-                          typeOfSeedTxtController.text.trim(),
-                      ApiConstants.amountOfSeedApiKey:
-                          amountOfSeedTxtController.text.trim(),
-                      ApiConstants.dateOfPlantingApiKey:
-                          dateOfPlantingTxtController.text.trim(),
-                      ApiConstants.amountOfCompostApiKey:
-                          amountOfCompostTxtController.text.trim(),
-                    };
-                    for (int i = 0; i < numberOfTextFields; i++) {
-                      String key =
-                          '${ApiConstants.fertilizerDetailsApiKey}${[i]}';
-                      if (widget.isEditPage! &&
-                          i < widget.farmDetails!.detailsOfFertilizer!.length) {
-                        map['$key${[ApiConstants.idAPiKey]}'] = widget
-                            .farmDetails!.detailsOfFertilizer![i].id
-                            .toString();
+                    Map<String, String> apifilelist = {};
+                    print('selected==$selectedImage');
+                    if (selectedVillage.isEmpty) {
+                      showSnackBar(context, 'Please select village from list');
+                    } else {
+                      if (selectedImage != null) {
+                        apifilelist[ApiConstants.imageApiKey] =
+                            selectedImage!.path;
                       }
-                      map['$key${[ApiConstants.dateOfAddWaterApiKey]}'] =
-                          dateOfGivenWaterTxtController[i].text.trim();
+                      map = {
+                        ApiConstants.userIdApiKey:
+                            context.read<UserDetailsCubit>().getUserId(),
+                        ApiConstants.farmerNameApiKey:
+                            farmnerNameTxtController.text.trim(),
+                        ApiConstants.villageApiKey: selectedVillage,
+                        ApiConstants.talukaApiKey: selectedTaluko,
+                        ApiConstants.mobileApiKey:
+                            mobileTxtController.text.trim(),
+                        ApiConstants.allocatedLandAreaApiKey:
+                            allocatedLandAreaTxtController.text.trim(),
+                        ApiConstants.locationOfFarmApiKey: jsonEncode({
+                          ApiConstants.latitudeApiKey: _currentLatitude,
+                          ApiConstants.longitudeApiKey: _currentLongitude
+                        }),
+                        ApiConstants.noOfTreesOnRidgeApiKey:
+                            noOfTreesOnRidgeTxtController.text.trim(),
+                        ApiConstants.grownCropsApiKey:
+                            grownCropsTxtController.text.trim(),
+                        ApiConstants.plantedCropsApiKey:
+                            plantedCropsTxtController.text.trim(),
+                        ApiConstants.typeOfSeedApiKey:
+                            typeOfSeedTxtController.text.trim(),
+                        ApiConstants.amountOfSeedApiKey:
+                            amountOfSeedTxtController.text.trim(),
+                        ApiConstants.dateOfPlantingApiKey:
+                            dateOfPlantingTxtController.text.trim(),
+                        ApiConstants.amountOfCompostApiKey:
+                            amountOfCompostTxtController.text.trim(),
+                      };
+                      for (int i = 0; i < numberOfTextFields; i++) {
+                        String key =
+                            '${ApiConstants.fertilizerDetailsApiKey}${[i]}';
+                        if (dateOfGivenWaterTxtController[i].text.isNotEmpty ||
+                            nameOfFetrtilizerController[i].text.isNotEmpty ||
+                            quanityOfFetrtilizerController[i].text.isNotEmpty) {
+                          if (widget.isEditPage! &&
+                              i <
+                                  widget.farmDetails!.detailsOfFertilizer!
+                                      .length) {
+                            map['$key${[ApiConstants.idAPiKey]}'] = widget
+                                .farmDetails!.detailsOfFertilizer![i].id
+                                .toString();
+                          }
+                          map['$key${[ApiConstants.dateOfAddWaterApiKey]}'] =
+                              dateOfGivenWaterTxtController[i].text.trim();
 
-                      map['$key${[ApiConstants.nameAPiKey]}'] =
-                          nameOfFetrtilizerController[i].text.trim();
-                      map['$key${[ApiConstants.quantityApiKey]}'] =
-                          quanityOfFetrtilizerController[i].text.trim();
+                          map['$key${[ApiConstants.nameAPiKey]}'] =
+                              nameOfFetrtilizerController[i].text.trim();
+                          map['$key${[ApiConstants.quantityApiKey]}'] =
+                              quanityOfFetrtilizerController[i].text.trim();
+                        }
+                      }
+
+                      if (widget.isEditPage == true) {
+                        map[Constants.id] = widget.farmDetails!.id.toString();
+                      }
+                      print('--map--$map');
+
+                      context.read<AddNewApplicationCubit>().addNewApplication(
+                          farmDetails: map,
+                          isEditPage: widget.isEditPage ?? false,
+                          filepath: apifilelist);
                     }
-
-                    if (widget.isEditPage == true) {
-                      map[Constants.id] = widget.farmDetails!.id.toString();
-                    }
-                    print('--map--$map');
-
-                    context.read<AddNewApplicationCubit>().addNewApplication(
-                        farmDetails: map,
-                        isEditPage: widget.isEditPage ?? false);
                   }
                 }
               } else {
@@ -629,6 +679,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           hint: StringRes.dateOfGivenWater,
           title: '',
           isReadOnly: true,
+          useValidator: false,
           contentPadiing: 5),
     );
   }
@@ -640,6 +691,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         hint: StringRes.nameOfFertilizer,
         title: '',
         maxLines: 2,
+        useValidator: false,
         contentPadiing: 5);
   }
 
@@ -649,6 +701,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         textInputAction: TextInputType.number,
         hint: StringRes.quantityOfFertilizer,
         title: '',
+        useValidator: false,
         contentPadiing: 5);
   }
 
@@ -661,4 +714,205 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         },
         child: const Text('Add new detail'),
       );
+
+  uploadFarmerProfile() {
+    return Center(
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: Stack(
+          children: [
+            ClipOval(child: buildProfilePicture()),
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: GestureDetector(
+                onTap: _showSelectionDialog,
+                child: Container(
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(width: 2, color: AppColors.whiteColor)),
+                  child: const CircleAvatar(
+                    radius: 12,
+                    backgroundColor: Color(0xFFbebec7),
+                    child: Icon(
+                      Icons.mode_edit_outline_outlined,
+                      size: 15,
+                      color: AppColors.blackColor,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+// Selection dialog that prompts the user to select an existing photo or take a new one
+  Future _showSelectionDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text(StringRes.selectPhoto),
+        children: <Widget>[
+          SimpleDialogOption(
+            child: const Text(StringRes.fromGallery),
+            onPressed: () {
+              selectOrTakePhoto(ImageSource.gallery);
+              Navigator.pop(context);
+            },
+          ),
+          SimpleDialogOption(
+            child: const Text(StringRes.takePhoto),
+            onPressed: () {
+              selectOrTakePhoto(ImageSource.camera);
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Method for sending a selected or taken photo to the EditPage
+  Future selectOrTakePhoto(ImageSource imageSource) async {
+    XFile? pickedFile;
+    try {
+      pickedFile = await picker.pickImage(
+        source: imageSource,
+      );
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+    if (pickedFile != null) {
+      File? file = File(pickedFile.path);
+      setState(() {
+        selectedImage = File(file.path);
+      });
+    } else {
+      showSnackBar(context, StringRes.noPhotoSelected);
+    }
+  }
+
+  buildProfilePicture() {
+    return Container(
+      height: 90,
+      width: 90,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(50),
+        border: Border.all(color: Theme.of(context).primaryColor),
+      ),
+      child: Container(
+        height: 85,
+        width: 85,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.whiteColor,
+            image: profileUrl != '' || selectedImage != null
+                ? DecorationImage(
+                    image: selectedImage != null
+                        ? FileImage(selectedImage!) as ImageProvider
+                        : NetworkImage(profileUrl),
+                    fit: BoxFit.cover)
+                : null),
+        child: profileUrl == '' && selectedImage == null
+            ? Icon(
+                Icons.person,
+                color: Theme.of(context).primaryColor,
+                size: 50,
+              )
+            : null,
+      ),
+    );
+  }
+
+  villageNameList() {
+    return Container(
+      // width: width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: AppColors.whiteColor,
+        border: Border.all(color: AppColors.blackColor),
+      ),
+      height: 250,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsetsDirectional.only(
+                  bottom: 5, start: 10, end: 10),
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: villageList.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        selectedVillage = villageList[index];
+
+                        villageTextController.text = selectedVillage;
+                        villageList.clear();
+                        setState(
+                          () {},
+                        );
+                      },
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.60,
+                        child: Text(
+                          villageList[index],
+                          style: const TextStyle(
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    ); //,Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.start, children:List.generate(categoryList.length, (index) => Text(categoryList[index].name.toString())));
+  }
+
+  List<String> temp = [];
+  void searchVillage(String query) {
+    print('search village calle');
+    print('==villages==${villageList.length}== $query');
+    if (query.isEmpty) {
+      temp = districtList
+          .firstWhere((element) => element.subDistrict == selectedTaluko)
+          .villages!
+          .toList();
+    } else {
+      temp = districtList
+          .firstWhere((element) => element.subDistrict == selectedTaluko)
+          .villages!
+          .where((village) {
+        final nameLower = village.toString().toLowerCase();
+
+        final searchLower = query.toLowerCase();
+
+        return nameLower.contains(searchLower);
+      }).toList();
+    }
+    print('==temp==${temp.length}==$temp');
+    setState(() {
+      query = query;
+      villageList = temp;
+    });
+  }
 }

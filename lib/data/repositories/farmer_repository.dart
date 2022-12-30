@@ -7,15 +7,19 @@ import '../../main.dart';
 import '../../screens/screen_widgets.dart/custom_exception.dart';
 
 class FarmerRepository {
-  addNewApplication(
-      {required Map<String, dynamic> farmDetails,
-      required bool isEditPage}) async {
-    var getdata = await apiBaseHelper.postAPICall(
-        param: farmDetails,
-        apiMethodUrl: isEditPage
+  addNewApplication({
+    required Map<String, dynamic> farmDetails,
+    required bool isEditPage,
+    required Map<String, String> files,
+  }) async {
+    var getdata = await apiBaseHelper.postApiFile(
+        body: farmDetails,
+        filelist: files,
+        url: isEditPage
             ? ApiConstants.editFarmDetailsApiKey
             : ApiConstants.addFarmDetailsApiKey);
     if (getdata != null) {
+      print(getdata);
       bool error = getdata[Constants.error];
 
       if (!error) {

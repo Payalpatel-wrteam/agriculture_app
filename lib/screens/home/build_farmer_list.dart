@@ -209,9 +209,11 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(10), /* boxShadow: [appShadow] */
+        borderRadius: BorderRadius.circular(10), /* \: [appShadow] */
       ),
+      padding: const EdgeInsets.only(right: 5),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
             width: 5,
@@ -221,30 +223,34 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
                     AppColors.tileColors[index % AppColors.tileColors.length],
                 borderRadius: borderRadius(8, 0, 8, 0)),
           ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  text:
-                      '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
-                  textAlign: TextAlign.left,
-                  color: const Color(0xFF1a242f),
-                  size: 18,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                AppText(
-                  text: '${StringRes.village} : ${farmDetails[index].village!}',
-                  textAlign: TextAlign.left,
-                  color: AppColors.captionColor,
-                ),
-              ],
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    text:
+                        '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
+                    textAlign: TextAlign.left,
+                    color: const Color(0xFF1a242f),
+                    overflow: TextOverflow.visible,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  AppText(
+                    text:
+                        '${StringRes.village} : ${farmDetails[index].village!}',
+                    textAlign: TextAlign.left,
+                    color: AppColors.captionColor,
+                  ),
+                ],
+              ),
             ),
           ),
-          Spacer(),
+          // Spacer(),
           _buildIcons(farmDetails, index),
         ],
       ),
@@ -253,6 +259,7 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
 
   Widget _buildIcons(List<FarmDetails> farmDetails, int index) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
             onPressed: () {

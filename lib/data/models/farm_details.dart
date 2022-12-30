@@ -2,6 +2,7 @@ import 'package:agriculture_app/helper/api_constant.dart';
 
 class FarmDetails {
   String? farmerName;
+  String? image;
   String? village;
   String? taluka;
   String? mobile;
@@ -22,6 +23,7 @@ class FarmDetails {
 
   FarmDetails(
       {farmerName,
+      image,
       village,
       taluka,
       mobile,
@@ -42,6 +44,7 @@ class FarmDetails {
 
   FarmDetails.fromJson(Map<String, dynamic> json) {
     farmerName = json[ApiConstants.farmerNameApiKey];
+    image = json[ApiConstants.imageApiKey] ?? '';
     village = json[ApiConstants.villageApiKey];
     taluka = json[ApiConstants.talukaApiKey];
     mobile = json[ApiConstants.mobileApiKey];

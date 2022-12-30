@@ -112,6 +112,11 @@ class StringRes {
   static const String edit = 'Edit';
   static const String hello = 'Hello';
   static const String filterBy = 'Filter By';
+  static const String fromGallery = 'From gallery';
+  static const String takePhoto = 'Take a photo';
+  static const String selectPhoto = 'Select photo';
+  static const String noPhotoSelected = 'No photo was selected or taken';
+  static const String uploadProfileWarning = 'Please upload profile picture.';
 
   //******end*****farmer screen string **********
 }

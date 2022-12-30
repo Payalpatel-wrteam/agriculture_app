@@ -4,10 +4,12 @@ import 'package:agriculture_app/helper/strings.dart';
 import 'package:agriculture_app/helper/validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../app/routes.dart';
+import '../cubits/farmerApplications/new_application_cubit.dart';
 import '../screens/screen_widgets.dart/app_text.dart';
 import '../screens/screen_widgets.dart/caption_text.dart';
 
@@ -36,7 +38,13 @@ Widget buildBackButton(BuildContext context, String style,
       ? Theme.of(context).primaryColor
       : AppColors.whiteColor;
   return GestureDetector(
-    onTap: onPressed ?? () => Navigator.of(context).pop(),
+    onTap: onPressed ??
+        () {
+          if (context.read<AddNewApplicationCubit>().state
+              is! AddNewApplicationInProgress) {
+            Navigator.of(context).pop();
+          }
+        },
     child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15),
         alignment: Alignment.centerLeft,
@@ -81,17 +89,21 @@ Widget buildTextButton(Widget child, VoidCallback onPressed) {
       ));
 }
 
-Widget inputWidget(
-    {required TextEditingController textEditingController,
-    required TextInputType textInputAction,
-    required String hint,
-    required String title,
-    int? maxLines,
-    Function? validator,
-    double? contentPadiing = 15,
-    bool isPhoneNumber = false,
-    bool isReadOnly = false,
-    bool isDropDown = false}) {
+Widget inputWidget({
+  required TextEditingController textEditingController,
+  required TextInputType textInputAction,
+  required String hint,
+  required String title,
+  int? maxLines,
+  Function? validator,
+  double? contentPadiing = 15,
+  bool isPhoneNumber = false,
+  bool isReadOnly = false,
+  bool isDropDown = false,
+  bool useValidator = true,
+  VoidCallback? onTap,
+  ValueChanged<String>? onChanged,
+}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 5),
     child: Column(
@@ -116,17 +128,19 @@ Widget inputWidget(
               textInputAction: TextInputAction.next,
               autofocus: true,
               validator: (value) {
-                {
-                  if (value!.isEmpty) {
-                    return "Please fill this field";
-                  }
-                  if (isPhoneNumber) {
-                    final pattern = RegExp(
-                        r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
-                    if (!pattern.hasMatch(value)) {
-                      return StringRes.invalidPhoneMessage;
-                    } else {
-                      return null;
+                if (useValidator) {
+                  {
+                    if (value!.isEmpty) {
+                      return "Please fill this field";
+                    }
+                    if (isPhoneNumber) {
+                      final pattern = RegExp(
+                          r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
+                      if (!pattern.hasMatch(value)) {
+                        return StringRes.invalidPhoneMessage;
+                      } else {
+                        return null;
+                      }
                     }
                   }
                 }
@@ -144,6 +158,8 @@ Widget inputWidget(
                   // suffixIcon: isDropDown ? Image.asset() : null,
                   hintStyle:
                       TextStyle(color: AppColors.greyColor, fontSize: 14)),
+              onTap: onTap ?? () {},
+              onChanged: onChanged,
             ),
           ),
         ),

@@ -24,11 +24,15 @@ class AddNewApplicationCubit extends Cubit<AddNewApplicationState> {
   FarmerRepository farmerRepository = FarmerRepository();
   AddNewApplicationCubit() : super(AddNewApplicationInitial());
 
-  void addNewApplication(
-      {required Map<String, dynamic> farmDetails, required bool isEditPage}) {
+  void addNewApplication({
+    required Map<String, dynamic> farmDetails,
+    required bool isEditPage,
+    required Map<String, String> filepath,
+  }) {
     emit(AddNewApplicationInProgress());
     farmerRepository
-        .addNewApplication(farmDetails: farmDetails, isEditPage: isEditPage)
+        .addNewApplication(
+            farmDetails: farmDetails, isEditPage: isEditPage, files: filepath)
         .then((value) {
       emit(AddNewApplicationSuccess(
           value[Constants.data], value[Constants.message]));

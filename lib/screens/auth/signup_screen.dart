@@ -201,15 +201,11 @@ class _SignupScreenState extends State<SignupScreen> {
               : () {
                   if (_formKey.currentState!.validate()) {
                     {
-                      if (_isChecked) {
-                        context.read<SignUpCubit>().signUpUser(
-                            AuthProvider.email,
-                            _nameTextController.text.trim(),
-                            _emailTextController.text.trim(),
-                            _passwordTextController.text.trim());
-                      } else {
-                        showSnackBar(context, StringRes.acceptPolicy);
-                      }
+                      context.read<SignUpCubit>().signUpUser(
+                          AuthProvider.email,
+                          _nameTextController.text.trim(),
+                          _emailTextController.text.trim(),
+                          _passwordTextController.text.trim());
                     }
                   }
                 },
@@ -247,37 +243,6 @@ class _SignupScreenState extends State<SignupScreen> {
               color: Theme.of(context).secondaryHeaderColor,
               size: 14,
               overflow: TextOverflow.fade,
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => pushNewPage(context, Routes.appDetails, params: {
-                Constants.title: StringRes.privacyPolicy,
-                Constants.type: ApiConstants.privacyPolicyAppApitype
-              }),
-              child: const AppText(
-                text: StringRes.privacyPolicy,
-                size: 14,
-                textDecoration: TextDecoration.underline,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: AppText(text: '&'),
-            ),
-            GestureDetector(
-              onTap: () => pushNewPage(context, Routes.appDetails, params: {
-                Constants.title: StringRes.termsConditions,
-                Constants.type: ApiConstants.termsAppApitype
-              }),
-              child: const AppText(
-                text: StringRes.terms,
-                size: 14,
-                textDecoration: TextDecoration.underline,
-              ),
             ),
           ],
         ),

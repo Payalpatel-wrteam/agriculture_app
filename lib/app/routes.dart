@@ -1,4 +1,3 @@
-import 'package:agriculture_app/screens/app_details_screen.dart';
 import 'package:agriculture_app/screens/auth/forgot_password_screen.dart';
 import 'package:agriculture_app/screens/auth/login_screen.dart';
 import 'package:agriculture_app/screens/auth/signup_screen.dart';
@@ -17,7 +16,6 @@ class Routes {
   static const login = '/login';
   static const signup = '/signup';
   static const forgotPassword = '/forgot_password';
-  static const appDetails = '/app_details';
   static const newApplication = '/new_application';
   static String currentRoute = splash;
   static Route<dynamic> onGenerateRouted(RouteSettings settings) {
@@ -41,9 +39,6 @@ class Routes {
 
             case Routes.main:
               return MainScreen.route();
-
-            case Routes.appDetails:
-              return AppDetailsScreen.route(map!);
 
             case Routes.newApplication:
               return NewApplicationScreen.route(map);
