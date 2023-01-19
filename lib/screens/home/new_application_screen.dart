@@ -29,10 +29,12 @@ import 'package:intl/intl.dart';
 
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/user_details_cubit.dart';
+import '../../cubits/farmerApplications/delete_farm_details_cubit.dart';
 
 class NewApplicationScreen extends StatefulWidget {
   final FarmDetails? farmDetails;
   final bool? isEditPage;
+
   const NewApplicationScreen({Key? key, this.farmDetails, this.isEditPage})
       : super(key: key);
 
@@ -43,6 +45,8 @@ class NewApplicationScreen extends StatefulWidget {
       providers: [
         BlocProvider<AddNewApplicationCubit>(
             create: (context) => AddNewApplicationCubit()),
+        BlocProvider<DeleteFarmDetailsCubit>(
+            create: (context) => DeleteFarmDetailsCubit()),
       ],
       child: NewApplicationScreen(
         farmDetails: map != null ? map['farmDetails'] : null,
@@ -80,12 +84,13 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
   String defaultSelectedVillage = 'Select Village',
       defaultSelectedDistrict = 'Select District';
   String formattedDate = '', selectedTaluko = '', selectedVillage = '';
-
+  bool isReadOnly = false;
   List<String> villageList = [];
   String? _currentAddress;
   double? _currentLatitude;
   double? _currentLongitude;
   Position? _currentPosition;
+  bool showVilageList = false;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -108,9 +113,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         .firstWhere((element) => element.subDistrict == selectedTaluko)
         .villages!
         .toList();
+    isReadOnly = context.read<UserDetailsCubit>().isFarmer();
     // selectedVillage = districtList.first.villages!.first;
     Future.delayed(Duration.zero, () {
       context.read<AddNewApplicationCubit>().resetState();
+      isReadOnly = context.read<UserDetailsCubit>().isFarmer();
     });
     initializeControllers();
   }
@@ -226,15 +233,14 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         uploadFarmerProfile(),
-        const SizedBox(
-          height: 30,
-        ),
+        const SizedBox(height: 30),
 
         inputWidget(
           textEditingController: farmnerNameTxtController,
           textInputAction: TextInputType.name,
           hint: StringRes.farmerName,
           title: StringRes.farmerName,
+          isReadOnly: isReadOnly,
         ),
         // AnimatedTextField(
         //   title: StringRes.allocatedLandArea,
@@ -243,6 +249,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             hintText: StringRes.taluka,
             text: StringRes.taluka,
             selectedValue: selectedTaluko,
+            isReadOnly: isReadOnly,
             onChanged: (value) {
               setState(() {
                 selectedTaluko = value.toString();
@@ -265,16 +272,21 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             textInputAction: TextInputType.text,
             hint: StringRes.village,
             title: StringRes.village,
+            isReadOnly: isReadOnly,
             onTap: () {
-              villageList.clear();
+              // villageList.clear();
 
               print("controller:${villageTextController.text.toString()}");
               setState(
-                () {},
+                () {
+                  showVilageList = true;
+                },
               );
             },
             onChanged: searchVillage),
-        villageList.isNotEmpty ? villageNameList() : const SizedBox(),
+        villageList.isNotEmpty && showVilageList
+            ? villageNameList()
+            : const SizedBox(),
 
         inputWidget(
             textEditingController: mobileTxtController,
@@ -282,21 +294,26 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             hint: StringRes.mobile,
             title: StringRes.mobile,
             isPhoneNumber: true,
+            isReadOnly: isReadOnly,
             validator: (value) => Validator.validatePhoneNumber(value)),
         inputWidget(
           textEditingController: allocatedLandAreaTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.allocatedLandArea,
           title: StringRes.allocatedLandArea,
+          isReadOnly: isReadOnly,
         ),
-        GestureDetector(
-          onTap: _getCurrentPosition,
-          child: inputWidget(
-              textEditingController: locationOfFarmTxtController,
-              textInputAction: TextInputType.name,
-              hint: StringRes.locationOfFarm,
-              title: StringRes.locationOfFarm,
-              isReadOnly: true),
+        IgnorePointer(
+          ignoring: isReadOnly,
+          child: GestureDetector(
+            onTap: _getCurrentPosition,
+            child: inputWidget(
+                textEditingController: locationOfFarmTxtController,
+                textInputAction: TextInputType.name,
+                hint: StringRes.locationOfFarm,
+                title: StringRes.locationOfFarm,
+                isReadOnly: true),
+          ),
         ),
         if (_kGooglePlex != null) _buildGoogleMap(),
         inputWidget(
@@ -304,12 +321,14 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           textInputAction: TextInputType.number,
           hint: StringRes.noOfTreesOnRidge,
           title: StringRes.noOfTreesOnRidge,
+          isReadOnly: isReadOnly,
         ),
         inputWidget(
             textEditingController: grownCropsTxtController,
             textInputAction: TextInputType.multiline,
             hint: StringRes.grownCrops,
             title: StringRes.grownCrops,
+            isReadOnly: isReadOnly,
             maxLines: 5),
         _buildSectionHeader(StringRes.detailsOfPlantation),
         inputWidget(
@@ -317,38 +336,44 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           textInputAction: TextInputType.name,
           hint: StringRes.plantedCrops,
           title: StringRes.plantedCrops,
+          isReadOnly: isReadOnly,
         ),
         inputWidget(
           textEditingController: typeOfSeedTxtController,
           textInputAction: TextInputType.name,
           hint: StringRes.typeOfSeed,
           title: StringRes.typeOfSeed,
+          isReadOnly: isReadOnly,
         ),
         inputWidget(
           textEditingController: amountOfSeedTxtController,
           textInputAction: TextInputType.number,
           hint: StringRes.amountOfSeed,
           title: StringRes.amountOfSeed,
+          isReadOnly: isReadOnly,
         ),
-        GestureDetector(
-          onTap: () async {
-            plantingDate = await openDatePicker(context);
+        IgnorePointer(
+          ignoring: isReadOnly,
+          child: GestureDetector(
+            onTap: () async {
+              plantingDate = await openDatePicker(context);
 
-            if (plantingDate != null) {
-              formattedDate = DateFormat('dd-MM-yyyy').format(plantingDate!);
+              if (plantingDate != null) {
+                formattedDate = DateFormat('dd-MM-yyyy').format(plantingDate!);
 
-              setState(() {
-                dateOfPlantingTxtController.text =
-                    formattedDate; //set output date to TextField value.
-              });
-            } else {}
-          },
-          child: inputWidget(
-              textEditingController: dateOfPlantingTxtController,
-              textInputAction: TextInputType.name,
-              hint: StringRes.dateOfPlanting,
-              title: StringRes.dateOfPlanting,
-              isReadOnly: true),
+                setState(() {
+                  dateOfPlantingTxtController.text =
+                      formattedDate; //set output date to TextField value.
+                });
+              } else {}
+            },
+            child: inputWidget(
+                textEditingController: dateOfPlantingTxtController,
+                textInputAction: TextInputType.name,
+                hint: StringRes.dateOfPlanting,
+                title: StringRes.dateOfPlanting,
+                isReadOnly: true),
+          ),
         ),
 
         inputWidget(
@@ -356,6 +381,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           textInputAction: TextInputType.number,
           hint: StringRes.amountOfCompost,
           title: StringRes.amountOfCompost,
+          isReadOnly: isReadOnly,
         ),
         _buildSectionHeader(StringRes.waterAndFertilizerDetails),
         _buildWaterDetailHeaders(),
@@ -363,14 +389,74 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         smallSizedBox(),
         _buildAddMore(),
         defaultSizedBox(),
-        _buildSubmitButton(context)
+        _buildSubmitButton(),
+        if (widget.isEditPage == true &&
+            !context.read<UserDetailsCubit>().isFarmer())
+          _buildDeleteButton()
       ],
+    );
+  }
+
+  _buildDeleteButton() {
+    GetFarmDetailsSuccess? getBlocState;
+    if (context.read<GetFarmDetailsCubit>().state is GetFarmDetailsSuccess) {
+      getBlocState =
+          context.read<GetFarmDetailsCubit>().state as GetFarmDetailsSuccess;
+    }
+    return BlocConsumer<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
+      listener: (context, state) {
+        print('delete state==$state');
+        if (state is DeleteFarmDetailsSuccess) {
+          showSnackBar(context, state.successMessage);
+          getBlocState!.farmDetails
+              .removeWhere((element) => element.id == state.id);
+          context.read<GetFarmDetailsCubit>().emitSuccessState(
+              farmDetails: getBlocState.farmDetails,
+              totalData: getBlocState.totalData - 1,
+              hasMore:
+                  getBlocState.totalData - 1 > getBlocState.farmDetails.length);
+          Navigator.of(context).pop();
+        }
+
+        if (state is DeleteFarmDetailsFailure) {
+          print('delete error--${state.errorMessage}');
+
+          showSnackBar(context, state.errorMessage);
+        }
+      },
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: ResponsiveButton(
+            color: AppColors.redColor.withOpacity(0.8),
+            child: state is DeleteFarmDetailsInProgress
+                ? const CircularProgressIndicator(
+                    color: AppColors.whiteColor,
+                  )
+                : const AppText(
+                    text: StringRes.deleteApplication,
+                    color: AppColors.whiteColor,
+                  ),
+            onPressed: () {
+              if (state is! DeleteFarmDetailsInProgress) {
+                navigateBack(
+                    context, 'Are you sure you want delete this entry?',
+                    exitApp: false, onTapYes: () {
+                  context
+                      .read<DeleteFarmDetailsCubit>()
+                      .deleteFarmDetails(id: widget.farmDetails!.id!);
+                });
+              }
+            },
+          ),
+        );
+      },
     );
   }
 
   Row _buildWaterDetailHeaders() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: const [
         Expanded(
@@ -409,7 +495,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
     );
   }
 
-  _buildSubmitButton(BuildContext context) {
+  _buildSubmitButton() {
     return BlocConsumer<AddNewApplicationCubit, AddNewApplicationState>(
       listener: (context, state) {
         if (state is AddNewApplicationFailure) {
@@ -450,6 +536,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           );
         }
         return ResponsiveButton(
+            color: const Color(0xFF2e4a98),
             child: const AppText(
               text: StringRes.submitLbl,
               color: AppColors.whiteColor,

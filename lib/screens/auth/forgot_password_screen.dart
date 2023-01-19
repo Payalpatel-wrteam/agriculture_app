@@ -53,7 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const SizedBox(height: 40),
+            // const SizedBox(height: 10),
             const AppLargeText(
               text: StringRes.forgotPasswordTitle,
               maxLines: 2,

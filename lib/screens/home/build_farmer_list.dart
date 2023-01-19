@@ -56,51 +56,53 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
 // This function will be triggered whenver the user scroll
   // to near the bottom of the list view
   void _loadMore() async {
-    if (_hasNextPage == true &&
-        (context.read<GetFarmDetailsCubit>().state as GetFarmDetailsSuccess)
-            .hasMore &&
-        _isLoadMoreRunning == false &&
-        _scrollController.position.pixels <
-            _scrollController.position.maxScrollExtent) {
-      _offset += Constants.paginationLimit; // Increase _page by 1
+    if (_scrollController.position.maxScrollExtent ==
+        _scrollController.offset) {
+      if (_hasNextPage == true &&
+          (context.read<GetFarmDetailsCubit>().state as GetFarmDetailsSuccess)
+              .hasMore &&
+          _isLoadMoreRunning == false) {
+        _offset += Constants.paginationLimit; // Increase _page by 1
 
-      setState(() {
-        _isLoadMoreRunning = true; // Display a progress indicator at the bottom
-      });
+        setState(() {
+          _isLoadMoreRunning =
+              true; // Display a progress indicator at the bottom
+        });
 
-      try {
-        param[ApiConstants.offsetAPiKey] = _offset.toString();
+        try {
+          param[ApiConstants.offsetAPiKey] = _offset.toString();
 
-        var response = await apiBaseHelper.postAPICall(
-            param: param, apiMethodUrl: ApiConstants.getFarmDetailsApiKey);
+          var response = await apiBaseHelper.postAPICall(
+              param: param, apiMethodUrl: ApiConstants.getFarmDetailsApiKey);
 
-        if (!response[Constants.error]) {
-          var list = response[Constants.data] as List<dynamic>;
-          final fetchedData =
-              list.map((model) => FarmDetails.fromJson(model)).toList();
+          if (!response[Constants.error]) {
+            var list = response[Constants.data] as List<dynamic>;
+            final fetchedData =
+                list.map((model) => FarmDetails.fromJson(model)).toList();
 
-          if (fetchedData.isNotEmpty) {
-            setState(() {
-              farmDetails.addAll(fetchedData);
-            });
-          }
-          if (farmDetails.length == response[Constants.total]) {
+            if (fetchedData.isNotEmpty) {
+              setState(() {
+                farmDetails.addAll(fetchedData);
+              });
+            }
+            if (farmDetails.length == response[Constants.total]) {
+              setState(() {
+                _hasNextPage = false;
+              });
+            }
+          } else {
             setState(() {
               _hasNextPage = false;
             });
           }
-        } else {
-          setState(() {
-            _hasNextPage = false;
-          });
+        } catch (err) {
+          // print('Something went wrong!');
         }
-      } catch (err) {
-        // print('Something went wrong!');
-      }
 
-      setState(() {
-        _isLoadMoreRunning = false;
-      });
+        setState(() {
+          _isLoadMoreRunning = false;
+        });
+      }
     }
   }
 
@@ -122,8 +124,6 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
       builder: (context, state) {
         print('get build state==$state');
         if (state is GetFarmDetailsSuccess) {
-          getBlocState = context.read<GetFarmDetailsCubit>().state
-              as GetFarmDetailsSuccess;
           return RefreshIndicator(
             onRefresh: () async {
               getFarmerData();
@@ -132,42 +132,19 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
               _isLoadMoreRunning = false;
             },
             triggerMode: RefreshIndicatorTriggerMode.anywhere,
-            child: BlocListener<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
-              listener: (context, state) {
-                print('delete state==$state');
-                if (state is DeleteFarmDetailsSuccess) {
-                  showSnackBar(context, state.successMessage);
-                  getBlocState!.farmDetails
-                      .removeWhere((element) => element.id == state.id);
-                  context.read<GetFarmDetailsCubit>().emitSuccessState(
-                      farmDetails: getBlocState!.farmDetails,
-                      totalData: getBlocState!.totalData - 1,
-                      hasMore: getBlocState!.totalData - 1 >
-                          getBlocState!.farmDetails.length);
-                }
-
-                if (state is DeleteFarmDetailsFailure) {
-                  print('delete error--${state.errorMessage}');
-                  getBlocState!.farmDetails
-                      .firstWhere((element) => element.id == state.id)
-                      .deleteInProgress = false;
-                  showSnackBar(context, state.errorMessage);
-                }
-              },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Flexible(child: _buildListView(state)),
-                  if (_isLoadMoreRunning == true)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Flexible(child: _buildListView(state)),
+                if (_isLoadMoreRunning == true)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 10, bottom: 10),
+                    child: Center(
+                      child: CircularProgressIndicator(),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           );
         }
@@ -206,128 +183,58 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
   }
 
   Widget _buildListTile(List<FarmDetails> farmDetails, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(10), /* \: [appShadow] */
-      ),
-      padding: const EdgeInsets.only(right: 5),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 5,
-            height: 80,
-            decoration: BoxDecoration(
-                color:
-                    AppColors.tileColors[index % AppColors.tileColors.length],
-                borderRadius: borderRadius(8, 0, 8, 0)),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppText(
-                    text:
-                        '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
-                    textAlign: TextAlign.left,
-                    color: const Color(0xFF1a242f),
-                    overflow: TextOverflow.visible,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  AppText(
-                    text:
-                        '${StringRes.village} : ${farmDetails[index].village!}',
-                    textAlign: TextAlign.left,
-                    color: AppColors.captionColor,
-                  ),
-                ],
+    return GestureDetector(
+      onTap: () => pushNewPage(context, Routes.newApplication, params: {
+        'farmDetails': farmDetails[index],
+        'isEditPage': true,
+      }),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.whiteColor,
+          borderRadius: BorderRadius.circular(10), /* \: [appShadow] */
+        ),
+        padding: const EdgeInsets.only(right: 5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              width: 5,
+              height: 80,
+              decoration: BoxDecoration(
+                  color:
+                      AppColors.tileColors[index % AppColors.tileColors.length],
+                  borderRadius: borderRadius(8, 0, 8, 0)),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      text:
+                          '${StringRes.farmerName} : ${farmDetails[index].farmerName!}',
+                      textAlign: TextAlign.left,
+                      color: const Color(0xFF1a242f),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    AppText(
+                      text:
+                          '${StringRes.village} : ${farmDetails[index].village!}',
+                      textAlign: TextAlign.left,
+                      color: AppColors.captionColor,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Spacer(),
-          _buildIcons(farmDetails, index),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIcons(List<FarmDetails> farmDetails, int index) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-            onPressed: () {
-              pushNewPage(context, Routes.newApplication, params: {
-                'farmDetails': farmDetails[index],
-                'isEditPage': true
-              });
-            },
-            icon: Icon(
-              Icons.edit,
-              color: AppColors.greyColor,
-            )),
-        BlocBuilder<DeleteFarmDetailsCubit, DeleteFarmDetailsState>(
-          builder: (context, state) {
-            if (state is DeleteFarmDetailsInProgress &&
-                state.farmDetails
-                        .firstWhere(
-                            (element) => element.id == farmDetails[index].id)
-                        .deleteInProgress ==
-                    true) {
-              return const CircularProgressIndicator();
-            }
-            return IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (bldcontext) => AlertDialog(
-                            title: const AppText(
-                              text: 'Are you sure you want delete this entry?',
-                              overflow: TextOverflow.visible,
-                              color: AppColors.blackColor,
-                              lineSpacing: 1.5,
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(bldcontext).pop();
-                                },
-                                child: AppText(
-                                  text: StringRes.no,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(bldcontext).pop();
-
-                                  context
-                                      .read<DeleteFarmDetailsCubit>()
-                                      .deleteFarmDetails(
-                                          id: farmDetails[index].id!,
-                                          farmDetails: farmDetails);
-                                },
-                                child: AppText(
-                                  text: StringRes.yes,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ],
-                          ));
-                },
-                icon: const Icon(
-                  Icons.delete,
-                  color: AppColors.redColor,
-                ));
-          },
+          ],
         ),
-      ],
+      ),
     );
   }
 }

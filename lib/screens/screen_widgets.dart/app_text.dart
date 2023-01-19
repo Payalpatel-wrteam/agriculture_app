@@ -12,19 +12,20 @@ class AppText extends StatelessWidget {
   final TextOverflow? overflow;
 
   final double? lineSpacing;
-
-  const AppText({
-    Key? key,
-    required this.text,
-    this.color,
-    this.size = 16,
-    this.fontWeight = FontWeight.w400,
-    this.textAlign = TextAlign.left,
-    this.textDecoration = TextDecoration.none,
-    this.maxLines,
-    this.overflow,
-    this.lineSpacing,
-  }) : super(key: key);
+  final List<Shadow>? shadows;
+  const AppText(
+      {Key? key,
+      required this.text,
+      this.color,
+      this.size = 16,
+      this.fontWeight = FontWeight.w400,
+      this.textAlign = TextAlign.left,
+      this.textDecoration = TextDecoration.none,
+      this.maxLines,
+      this.overflow,
+      this.lineSpacing,
+      this.shadows})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +33,15 @@ class AppText extends StatelessWidget {
       text,
 
       style: TextStyle(
-        height: lineSpacing ?? 1.0,
-        fontSize: size,
-        color: color ?? Theme.of(context).primaryColor,
-        fontWeight: fontWeight,
-        decoration: textDecoration,
-        fontStyle: FontStyle.normal,
-        overflow: overflow ?? TextOverflow.ellipsis,
-      ),
+          height: lineSpacing ?? 1.0,
+          fontSize: size,
+          color: color ?? Theme.of(context).primaryColor,
+          fontWeight: fontWeight,
+          decoration: textDecoration,
+          fontStyle: FontStyle.normal,
+          overflow: overflow ?? TextOverflow.ellipsis,
+          decorationColor: Theme.of(context).primaryColor,
+          shadows: shadows),
 
       textAlign: textAlign,
       maxLines: maxLines,

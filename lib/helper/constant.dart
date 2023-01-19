@@ -38,4 +38,7 @@ class Constants {
   static const String name = 'name';
   static const String email = 'email';
   static const String firebaseId = 'firebase_id';
+
+  static const String supervisorType = '0';
+  static const String farmerType = '1';
 }

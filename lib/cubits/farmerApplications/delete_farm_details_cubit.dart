@@ -8,8 +8,8 @@ abstract class DeleteFarmDetailsState {}
 class DeleteFarmDetailsInitial extends DeleteFarmDetailsState {}
 
 class DeleteFarmDetailsInProgress extends DeleteFarmDetailsState {
-  final List<FarmDetails> farmDetails;
-  DeleteFarmDetailsInProgress(this.farmDetails);
+ 
+  DeleteFarmDetailsInProgress();
 }
 
 class DeleteFarmDetailsSuccess extends DeleteFarmDetailsState {
@@ -30,11 +30,10 @@ class DeleteFarmDetailsCubit extends Cubit<DeleteFarmDetailsState> {
   DeleteFarmDetailsCubit() : super(DeleteFarmDetailsInitial());
 
   void deleteFarmDetails(
-      {required int id, required List<FarmDetails> farmDetails}) {
+      {required int id}) {
     print('in delet api==$id');
-    farmDetails.firstWhere((element) => element.id == id).deleteInProgress =
-        true;
-    emit(DeleteFarmDetailsInProgress(farmDetails));
+   
+    emit(DeleteFarmDetailsInProgress());
     farmerRepository.deleteFarmDetails(id: id.toString()).then((value) {
       emit(DeleteFarmDetailsSuccess(id: id, successMessage: value));
     }).catchError((e) {

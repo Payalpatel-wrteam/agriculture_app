@@ -38,7 +38,7 @@ class Validator {
     //below regex for indian number
     final pattern = RegExp(
         r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
-    if (value!.isNotEmpty && !pattern.hasMatch(value)) {
+    if (value!.isEmpty && !pattern.hasMatch(value)) {
       return StringRes.invalidPhoneMessage;
     } else {
       return null;

@@ -1,5 +1,6 @@
 import 'package:agriculture_app/screens/auth/forgot_password_screen.dart';
 import 'package:agriculture_app/screens/auth/login_screen.dart';
+import 'package:agriculture_app/screens/auth/otp_screen.dart';
 import 'package:agriculture_app/screens/auth/signup_screen.dart';
 import 'package:agriculture_app/screens/home/new_application_screen.dart';
 import 'package:agriculture_app/screens/main_screen.dart';
@@ -17,6 +18,7 @@ class Routes {
   static const signup = '/signup';
   static const forgotPassword = '/forgot_password';
   static const newApplication = '/new_application';
+  static const otpScreen = '/otp_screen';
   static String currentRoute = splash;
   static Route<dynamic> onGenerateRouted(RouteSettings settings) {
     final Map? map = settings.arguments as Map?;
@@ -42,6 +44,9 @@ class Routes {
 
             case Routes.newApplication:
               return NewApplicationScreen.route(map);
+
+            case Routes.otpScreen:
+              return OtpScreen.route(map);
 
             default:
               return const SplashScreen();

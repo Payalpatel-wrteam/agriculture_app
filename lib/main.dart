@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/routes.dart';
 import 'cubits/auth/auth_cubit.dart';
 import 'cubits/auth/user_details_cubit.dart';
+import 'cubits/farmerApplications/delete_farm_details_cubit.dart';
 import 'data/models/farm_details.dart';
 import 'helper/network_api.dart';
 import 'helper/session.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
         BlocProvider<UserDetailsCubit>(create: (_) => UserDetailsCubit()),
         BlocProvider<GetFarmDetailsCubit>(create: (_) => GetFarmDetailsCubit()),
+       
       ],
       child: MaterialApp(
         title: Constants.appName,

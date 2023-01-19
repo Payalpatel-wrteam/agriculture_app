@@ -5,7 +5,7 @@ import '../../data/models/auth_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../main.dart';
 
-enum AuthProvider { gmail, fb, email, apple }
+enum AuthProvider { gmail, fb, email, apple, mobile }
 
 abstract class AuthState {}
 

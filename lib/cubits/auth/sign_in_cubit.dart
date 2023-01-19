@@ -43,12 +43,23 @@ class SignInCubit extends Cubit<SignInState> {
 
   SignInCubit() : super(SignInInitial()); //cubit initialization
 
-  void signInUser(AuthProvider authProvider,
-      {String? email, String? password}) {
+  void signInUser(
+    AuthProvider authProvider, {
+    String? email,
+    String? password,
+    String? verificationId,
+    String? smsCode,
+  }) {
     emit(SignInProgress(authProvider));
 
     authRepository
-        .signInUser(authProvider, email: email ?? '', password: password ?? '')
+        .signInUser(
+          authProvider,
+          email: email ?? '',
+          password: password ?? '',
+          smsCode: smsCode ?? "",
+          verificationId: verificationId ?? "",
+        )
         .then((value) => emit(SignInSuccess(
             userId: value[Constants.userId],
             token: value[Constants.token],

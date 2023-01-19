@@ -73,24 +73,21 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              // buildSkip(context, () {
-              //   context.read<AuthCubit>().checkIsAuthenticated();
-              //   context.read<UserDetailsCubit>().resetUserDetailsState();
-              //   redirectToMainScreen(context);
-              // }),
               const Align(
                   alignment: Alignment.topLeft,
                   child: AppLargeText(text: StringRes.signInLbl)),
               defaultSizedBox(),
-              _buildEmailAndPassword(context),
+              _buildEmailAndPassword(),
               defaultSizedBox(),
-              _buildSignUpButton(context),
+              _buildFarmerLoginLink(),
+              defaultSizedBox(),
+              _buildSignUpButton(),
             ]),
           ),
         )));
   }
 
-  Widget _buildEmailAndPassword(context) {
+  Widget _buildEmailAndPassword() {
     return BlocConsumer<SignInCubit, SignInState>(
       listener: (context, state) {
         if (state is SignInFailure &&
@@ -202,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           icon: const Icon(Icons.visibility_off));
 
-  Widget _buildSignUpButton(BuildContext context) {
+  Widget _buildSignUpButton() {
     return Wrap(
       runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -219,6 +216,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   Routes.signup,
                 )),
       ],
+    );
+  }
+
+  _buildFarmerLoginLink() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: buildTextButton(
+          AppText(
+            text: StringRes.farmerLogin,
+            fontWeight: FontWeight.w300,
+            textDecoration: TextDecoration.underline,
+            color: Colors.transparent,
+            shadows: [
+              Shadow(
+                  offset: const Offset(0, -5),
+                  color: Theme.of(context).secondaryHeaderColor)
+            ],
+          ), () {
+        pushNewPage(context, Routes.otpScreen);
+      }),
     );
   }
 }

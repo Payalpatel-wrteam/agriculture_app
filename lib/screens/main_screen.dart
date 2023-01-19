@@ -21,13 +21,7 @@ class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
   static route() {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<DeleteFarmDetailsCubit>(
-            create: (context) => DeleteFarmDetailsCubit()),
-      ],
-      child: const MainScreen(),
-    );
+    return const MainScreen();
   }
 }
 
@@ -62,7 +56,5 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  resetAllStates() {
-    context.read<UserDetailsCubit>().resetUserDetailsState();
-  }
+  
 }

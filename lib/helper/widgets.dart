@@ -102,6 +102,7 @@ Widget inputWidget({
   bool isDropDown = false,
   bool useValidator = true,
   VoidCallback? onTap,
+  bool autoFocus = true,
   ValueChanged<String>? onChanged,
 }) {
   return Padding(
@@ -126,7 +127,7 @@ Widget inputWidget({
             ignoring: isReadOnly,
             child: TextFormField(
               textInputAction: TextInputAction.next,
-              autofocus: true,
+              autofocus: false,
               validator: (value) {
                 if (useValidator) {
                   {
@@ -173,6 +174,7 @@ Widget dropwdownWidget(
     required String text,
     required String selectedValue,
     required Function(String?) onChanged,
+    bool isReadOnly = false,
     required List<DropdownMenuItem<String>>? items}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -193,27 +195,30 @@ Widget dropwdownWidget(
                 border: Border.all(
                   color: AppColors.greyColor!,
                 )),
-            child: DropdownButton(
-              isExpanded: true,
-              style: const TextStyle(
-                  color: AppColors.blackColor), //Dropdown font color
-              dropdownColor: Colors.white, //dropdown menu background color
-              icon: Icon(Icons.keyboard_arrow_down_sharp,
-                  color: AppColors.greyColor), //dropdown indicator icon
+            child: IgnorePointer(
+              ignoring: isReadOnly,
+              child: DropdownButton(
+                isExpanded: true,
+                style: const TextStyle(
+                    color: AppColors.blackColor), //Dropdown font color
+                dropdownColor: Colors.white, //dropdown menu background color
+                icon: Icon(Icons.keyboard_arrow_down_sharp,
+                    color: AppColors.greyColor), //dropdown indicator icon
 
-              hint: selectedValue == ''
-                  ? Text(
-                      hintText,
-                      style: TextStyle(color: AppColors.greyColor),
-                    )
-                  : Text(selectedValue,
-                      style: TextStyle(color: AppColors.blackColor)),
-              underline: const SizedBox(),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                hint: selectedValue == ''
+                    ? Text(
+                        hintText,
+                        style: TextStyle(color: AppColors.greyColor),
+                      )
+                    : Text(selectedValue,
+                        style: TextStyle(color: AppColors.blackColor)),
+                underline: const SizedBox(),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
 
-              // value: selectedValue,
-              onChanged: onChanged,
-              items: items,
+                // value: selectedValue,
+                onChanged: onChanged,
+                items: items,
+              ),
             ),
           )
         ]),
@@ -263,6 +268,7 @@ TextFormField buildTextField(
     TextInputType? textInputType,
     TextInputAction? textInputAction,
     FocusNode? focusNode,
+    String? prefixText,
     Widget? suffixWidget}) {
   return TextFormField(
     controller: controller,
@@ -291,6 +297,14 @@ TextFormField buildTextField(
           borderRadius: BorderRadius.circular(50)),
       contentPadding: const EdgeInsets.all(15),
       hintText: hintText,
+      prefix: prefixText != null
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(prefixText,
+                  style: const TextStyle(
+                      color: AppColors.whiteColor, fontSize: 16)),
+            )
+          : null,
       hintStyle: const TextStyle(
         fontSize: 16.0,
       ),
@@ -364,33 +378,36 @@ Widget buildSkip(BuildContext context, VoidCallback onPressed) {
 }
 
 Future<bool> navigateBack(BuildContext context, String message,
-    {required bool exitApp}) async {
+    {required bool exitApp, VoidCallback? onTapYes}) async {
   showDialog(
       context: context,
       builder: (context) => AlertDialog(
-            title: AppText(text: message),
+            title: AppText(
+                text: message,
+                overflow: TextOverflow.visible,
+                lineSpacing: 1.5,
+                color: AppColors.blackColor),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
                 child: AppText(
-                  text: StringRes.no,
-                  color: Theme.of(context).primaryColor,
-                ),
+                    text: StringRes.no, color: Theme.of(context).primaryColor),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                   if (exitApp)
                     SystemNavigator.pop();
-                  else
+                  else if (onTapYes != null) {
+                    onTapYes();
+                  } else {
                     Navigator.of(context).pop();
+                  }
                 },
                 child: AppText(
-                  text: StringRes.yes,
-                  color: Theme.of(context).primaryColor,
-                ),
+                    text: StringRes.yes, color: Theme.of(context).primaryColor),
               ),
             ],
           ));

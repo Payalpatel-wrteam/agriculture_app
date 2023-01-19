@@ -76,12 +76,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: <Widget>[
-                    // buildSkip(context, () {
-                    //   context.read<AuthCubit>().checkIsAuthenticated();
-                    //   context.read<UserDetailsCubit>().resetUserDetailsState();
-                    //   redirectToMainScreen(context);
-                    // }),
-                    // defaultSizedBox(),
                     const Align(
                         alignment: Alignment.topLeft,
                         child: AppLargeText(text: StringRes.signUpLbl)),

@@ -57,6 +57,7 @@ class StringRes {
   static const String signInLbl = 'Sign In';
   static const String signUpLbl = 'Sign Up';
   static const String submitLbl = 'Submit';
+  static const String deleteApplication = 'Delete Application';
   static const String forgorPassword = 'Forgot Password?';
   static const String orSigninWith = 'or sign in with';
   static const String dontHaveAccount = 'Don\'t have an Account ?';
@@ -74,6 +75,8 @@ class StringRes {
   static const String enterEmail = 'Enter Email address';
   static const String passwordResetLinkSent =
       'Password reset link has been sent to your email account';
+
+  static const String farmerLogin = 'Login as Farmer';
   //******end*****login screen string **********
 
 //******start*****main screen string **********

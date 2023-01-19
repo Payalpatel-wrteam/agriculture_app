@@ -6,6 +6,7 @@ import 'package:agriculture_app/helper/colors.dart';
 import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/design_config.dart';
 import 'package:agriculture_app/helper/strings.dart';
+import 'package:agriculture_app/main.dart';
 import 'package:agriculture_app/screens/home/build_farmer_list.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_large_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
@@ -95,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
+    print(
+        'token== ${session.getStringData(Constants.token)}==${context.read<AuthCubit>().getUserId()}');
     return Scaffold(
       body: BlocConsumer<UserDetailsCubit, UserDetailsState>(
           listener: (context, state) async {

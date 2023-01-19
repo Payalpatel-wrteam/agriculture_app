@@ -24,14 +24,22 @@ class AuthRepository {
     session.removeCurrentUserData();
   }
 
-  Future<Map<String, dynamic>> signInUser(AuthProvider authProvider,
-      {String? email, String? password}) async {
+  Future<Map<String, dynamic>> signInUser(
+    AuthProvider authProvider, {
+    required String email,
+    required String password,
+    required String verificationId,
+    required String smsCode,
+  }) async {
     if (await InternetConnectivity.isUserOffline()) {
       throw CustomException(StringRes.noInternetErrorMessage);
     }
     try {
-      Map<String, dynamic> result =
-          await checkSingInType(authProvider, email: email, password: password);
+      Map<String, dynamic> result = await checkSingInType(authProvider,
+          email: email,
+          password: password,
+          verificationId: verificationId,
+          smsCode: smsCode);
       if (result.isNotEmpty) {
         print('---result--$result');
 
@@ -94,13 +102,24 @@ class AuthRepository {
     }
   }
 
-  Future<dynamic> checkSingInType(AuthProvider authProvider,
-      {String? email, String? password}) async {
+  Future<dynamic> checkSingInType(
+    AuthProvider authProvider, {
+    String? email,
+    String? password,
+    required String verificationId,
+    required String smsCode,
+  }) async {
     Map<String, dynamic> result = {};
     try {
       if (authProvider == AuthProvider.email) {
         UserCredential userCredential =
             await signInWithEmail(email!, password!);
+        result['user'] = userCredential.user!;
+        result['isNewUser'] = userCredential.additionalUserInfo!.isNewUser;
+      } else if (authProvider == AuthProvider.mobile) {
+        UserCredential userCredential = await signInWithPhoneNumber(
+            verificationId: verificationId, smsCode: smsCode);
+
         result['user'] = userCredential.user!;
         result['isNewUser'] = userCredential.additionalUserInfo!.isNewUser;
       }
@@ -117,6 +136,17 @@ class AuthRepository {
       print(e.toString());
       throw CustomException(e.toString());
     }
+  }
+
+//signIn using phone number
+  Future<UserCredential> signInWithPhoneNumber(
+      {required String verificationId, required String smsCode}) async {
+    PhoneAuthCredential phoneAuthCredential = PhoneAuthProvider.credential(
+        verificationId: verificationId, smsCode: smsCode);
+
+    final UserCredential userCredential =
+        await _firebaseAuth.signInWithCredential(phoneAuthCredential);
+    return userCredential;
   }
 
   Future<UserCredential> signInWithEmail(String email, String password) async {
