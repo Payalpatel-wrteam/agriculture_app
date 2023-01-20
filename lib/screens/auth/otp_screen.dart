@@ -1,5 +1,6 @@
 import 'package:agriculture_app/cubits/auth/auth_cubit.dart';
 import 'package:agriculture_app/helper/strings.dart';
+import 'package:agriculture_app/screens/auth/resendOtpTimerContainer.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/glassmorphism_container.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,8 @@ class _OtpScreenState extends State<OtpScreen> {
   List<TextEditingController> controllers = [];
   List<FocusNode> focusNodes = [];
 
+  final GlobalKey<ResendOtpTimerContainerState> resendOtpTimerContainerKey =
+      GlobalKey<ResendOtpTimerContainerState>();
   final TextEditingController smsCodeEditingController =
       TextEditingController();
 
@@ -117,7 +120,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   codeSent
                       ? _buildSubmitOtpContainer()
                       : _buildRequestOtpContainer(),
-                  // codeSent ? _buildResendText() : Container(),
+                  defaultSizedBox(),
+                  codeSent ? _buildResendText() : Container(),
                 ],
               ),
             ),
@@ -349,11 +353,51 @@ class _OtpScreenState extends State<OtpScreen> {
           isLoading = false;
         });
 
-        // Future.delayed(Duration(milliseconds: 75)).then((value) {
-        //   resendOtpTimerContainerKey.currentState?.setResendOtpTimer();
-        // });
+        Future.delayed(const Duration(milliseconds: 75)).then((value) {
+          resendOtpTimerContainerKey.currentState?.setResendOtpTimer();
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+  }
+
+  Widget _buildResendText() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ResendOtpTimerContainer(
+            key: resendOtpTimerContainerKey,
+            enableResendOtpButton: () {
+              setState(() {
+                enableResendOtpButton = true;
+              });
+            }),
+        enableResendOtpButton
+            ? TextButton(
+                onPressed: enableResendOtpButton
+                    ? () async {
+                        print("Resend otp ");
+                        setState(() {
+                          isLoading = false;
+                          enableResendOtpButton = false;
+                        });
+                        resendOtpTimerContainerKey.currentState
+                            ?.cancelOtpTimer();
+                        signInWithPhoneNumber(
+                            phoneNumber: phoneNumberController.text.trim());
+                      }
+                    : null,
+                child: Text(
+                  'Resend OTP',
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).secondaryHeaderColor,
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.normal),
+                ),
+              )
+            : const SizedBox.shrink(),
+      ],
     );
   }
 }

@@ -17,7 +17,7 @@ class UserProfile {
       email: jsonData[Constants.email] ?? '',
       firebaseId: jsonData[Constants.firebaseId] ?? '',
       userId: jsonData['id'],
-      userType: jsonData['type'] ?? '1',
+      userType: jsonData['type'] ?? '0',
     );
   }
 }

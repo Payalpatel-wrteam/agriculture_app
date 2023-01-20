@@ -41,4 +41,5 @@ class Constants {
 
   static const String supervisorType = '0';
   static const String farmerType = '1';
+  static const int otpTimeOutSeconds = 60;
 }
