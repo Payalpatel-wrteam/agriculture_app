@@ -15,6 +15,8 @@ class ApiConstants {
   static const String idAPiKey = 'id';
   static const String userIdApiKey = 'user_id';
   static const String emailAPiKey = 'email';
+  static const String mobileNoAPiKey = 'mobile_no';
+  static const String typeAPiKey = 'type';
   static const String firebaseIdAPiKey = 'firebase_id';
   static const String limitAPiKey = 'limit';
   static const String offsetAPiKey = 'offset';

@@ -141,8 +141,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
     print('is Edit Page==${widget.isEditPage}');
     if (widget.isEditPage == true) {
       print('farm details==${widget.farmDetails!.toJson()}');
-      print(
-          'fertilizer controller lengh==${widget.farmDetails!.detailsOfFertilizer!.length}');
+
       farmnerNameTxtController.text = widget.farmDetails!.farmerName!;
       profileUrl = widget.farmDetails!.image ?? '';
       selectedVillage = widget.farmDetails!.village!;
@@ -295,6 +294,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             title: StringRes.mobile,
             isPhoneNumber: true,
             isReadOnly: isReadOnly,
+            prefixText: Constants.countryCode,
             validator: (value) => Validator.validatePhoneNumber(value)),
         inputWidget(
           textEditingController: allocatedLandAreaTxtController,
@@ -568,7 +568,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                         ApiConstants.villageApiKey: selectedVillage,
                         ApiConstants.talukaApiKey: selectedTaluko,
                         ApiConstants.mobileApiKey:
-                            mobileTxtController.text.trim(),
+                            '${Constants.countryCode}${mobileTxtController.text.trim()}',
                         ApiConstants.allocatedLandAreaApiKey:
                             allocatedLandAreaTxtController.text.trim(),
                         ApiConstants.locationOfFarmApiKey: jsonEncode({

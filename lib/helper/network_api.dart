@@ -22,17 +22,15 @@ class ApiBaseHelper {
     bool? headers,
     String requestType = 'post',
   }) async {
-    // String token = session.getStringData(Constants.tokenSessionKey);
+    String token = '';
 
-    // param[ApiConstants.userIdApiKey] =
-    //     session.getIntData(Constants.userIdSessionKey) ?? 0;
-    // print('sesson key ==${session.getIntData(Constants.userIdSessionKey)}');
+    token = session.getStringData(Constants.tokenSessionKey);
+    defaultHeaders.addAll({
+      'Authorization': 'Bearer $token',
+    });
+    print('token==$token');
 
-    // if (token.trim().isNotEmpty) {
-    //   defaultHeaders.addAll({
-    //     'Authorization': 'Bearer $token',
-    //   });
-    // }
+
     var responseJson, response;
     print('---param---$param---$apiMethodUrl');
     try {
@@ -41,6 +39,7 @@ class ApiBaseHelper {
       }
       if (requestType == 'post') {
         var url = Uri.parse('${ApiConstants.apiBaseUrl}$apiMethodUrl');
+        print('url=> $url');
         response = await http
             .post(url,
                 headers: defaultHeaders, body: param.isNotEmpty ? param : {})
@@ -54,7 +53,7 @@ class ApiBaseHelper {
         //   headers: {'Authorization': 'Bearer ****'},
         // ).timeout(const Duration(minutes: Constants.apiTimeOut));
       }
-      print(response);
+      print('---api response---$response');
       if (response != null) {
         responseJson = getJsonResponse(response: response);
       } else {
@@ -77,7 +76,12 @@ class ApiBaseHelper {
       required Map<String, dynamic> body}) async {
     var request =
         MultipartRequest('POST', Uri.parse('${ApiConstants.apiBaseUrl}$url'));
+    String token = '';
 
+    token = session.getStringData(Constants.tokenSessionKey);
+    defaultHeaders.addAll({
+      'Authorization': 'Bearer $token',
+    });
     request.headers.addAll(defaultHeaders);
 
     body.forEach((key, value) {
@@ -124,7 +128,8 @@ class ApiBaseHelper {
 
           return json.decode(String.fromCharCodes(responseData));
         } else {
-          return json.decode(response!.body);
+          print('res==${json.decode(response!.body)}');
+          return json.decode(response.body);
         }
 
       default:

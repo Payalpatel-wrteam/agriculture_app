@@ -33,6 +33,8 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
   }) {
     emit(GetFarmDetailsInProgress());
     farmerRepository.getFarmDetails(parameter: params).then((value) {
+      print('==value==$value');
+
       var list = value[Constants.data] as List<dynamic>;
 
       final data = list.map((model) => FarmDetails.fromJson(model)).toList();

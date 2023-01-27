@@ -11,13 +11,16 @@ class UserProfile {
       {this.email, this.firebaseId, this.name, this.userId, this.userType});
 
   static UserProfile fromJson(Map<String, dynamic> jsonData) {
+    print('==in json ===$jsonData');
     //torefer keys go profileMan.remoteRepo
     return UserProfile(
       name: jsonData[Constants.name] ?? '',
       email: jsonData[Constants.email] ?? '',
       firebaseId: jsonData[Constants.firebaseId] ?? '',
       userId: jsonData['id'],
-      userType: jsonData['type'] ?? '0',
+      userType: jsonData['type'] != null
+          ? jsonData['type'].toString()
+          : Constants.supervisorType,
     );
   }
 }

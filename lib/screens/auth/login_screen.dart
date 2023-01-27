@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showSnackBar(context, StringRes.deactivatedErrorMessage);
             return;
           }
-          print('-signin state--$state');
+          print('-signin state--$state===');
           // if (state.isNewUser) {
           context
               .read<UserDetailsCubit>()
@@ -109,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
           context.read<AuthCubit>().authenticateUser(
               userId: state.userId,
               firebaseId: state.user.uid,
-              token: state.token,
               authProvider: state.authProvider);
           redirectToMainScreen(context);
         }

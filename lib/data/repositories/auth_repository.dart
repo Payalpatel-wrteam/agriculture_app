@@ -51,10 +51,13 @@ class AuthRepository {
         var response = await addUser(null, user, authProvider);
 
         if (response != null) {
-          session.saveData(Constants.userIdSessionKey, response[Constants.id]);
-          // session.saveData(Constants.tokenSessionKey, response['api_token']);
-          // session.saveData(Constants.fcmTokenSessionKey, response['fcm_id']);
-          result[Constants.userId] = response[Constants.id];
+          session.saveData(
+              Constants.userIdSessionKey, response[Constants.id].toString());
+
+          print('*** ${response['token']}===${session.getStringData(
+            Constants.tokenSessionKey,
+          )}');
+          result[Constants.userId] = response[Constants.id].toString();
           result[Constants.token] = '';
           result[Constants.status] = '1';
         }
@@ -202,23 +205,15 @@ class AuthRepository {
     return authProvider;
   }
 
-  static Future<String> getFCMToken() async {
-    // try {
-    //   return await FirebaseMessaging.instance.getToken() ?? '';
-    // } catch (e) {
-    //   print(e.toString());
-    //   return "";
-    // }
-    return '';
-  }
-
   Future addUser(String? name, User user, AuthProvider authProvider) async {
-    String fcmToken = await getFCMToken();
-
     Map<String, String> parameter = {
       ApiConstants.firebaseIdAPiKey: user.uid,
       ApiConstants.nameAPiKey: name ?? user.displayName ?? '',
       ApiConstants.emailAPiKey: user.email ?? '',
+      ApiConstants.mobileNoAPiKey: user.phoneNumber ?? '',
+      ApiConstants.typeAPiKey: authProvider == AuthProvider.email
+          ? Constants.supervisorType
+          : Constants.farmerType
     };
     print('prama==$parameter');
     var getdata = await apiBaseHelper.postAPICall(
@@ -228,6 +223,7 @@ class AuthRepository {
       print('user login---$getdata');
 
       if (!error) {
+        session.saveData(Constants.tokenSessionKey, getdata['token']);
         return getdata[Constants.data];
       } else {
         throw CustomException(getdata[Constants.message]);
@@ -236,27 +232,6 @@ class AuthRepository {
       throw CustomException(StringRes.defaultErrorMessage);
     }
   }
-
-  // void updateFcmId(String fcmToken) async {
-  //   if (fcmToken != '') {
-  //     Map<String, String> parameter = {
-  //       updateFcmApiKey: '1',
-  //       userIdApiKey: session.getStringData(userIdSessionKey),
-  //       fcmIDAPiKey: fcmToken
-  //     };
-
-  //     var getdata = await apiBaseHelper.postAPICall(
-  //       param: parameter,
-  //       headers: false,
-  //     );
-  //     if (getdata != null) {
-  //       session.saveData(fcmTokenSessionKey, fcmToken);
-  //       print(getdata['message']);
-  //     } else {
-  //       throw CustomException(StringRes.updateFcmErrorMessage);
-  //     }
-  //   }
-  // }
 
   Future<String> resetPassword(String email) async {
     print('reset email--$email');
@@ -275,35 +250,5 @@ class AuthRepository {
     } catch (e) {
       return StringRes.defaultErrorMessage;
     }
-  }
-
-  Future<String> deleteAccount(String userId) async {
-    String message = '';
-    // try {
-    //   await FirebaseAuth.instance.currentUser!.delete();
-    //   Map<String, dynamic> parameter = {
-    //     deleteUserApiKey: '1',
-    //     userIdApiKey: userId,
-    //   };
-
-    //   var getdata = await apiBaseHelper.postAPICall(
-    //     param: parameter,
-    //   );
-    //   if (getdata != null) {
-    //     if (getdata["error"] == "true") {
-    //       throw CustomException(getdata["message"]);
-    //     } else {
-    //       session.removeCurrentUserData();
-    //       message = getdata['message'];
-    //     }
-    //   } else {
-    //     throw CustomException(StringRes.defaultErrorMessage);
-    //   }
-    // } on FirebaseAuthException catch (e) {
-    //   if (e.code == 'requires-recent-login') {
-    //     throw CustomException(StringRes.userDeleteErrorMessage);
-    //   }
-    // }
-    return message;
   }
 }

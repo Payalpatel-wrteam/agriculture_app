@@ -17,7 +17,7 @@ class SignInProgress extends SignInState {
 class SignInSuccess extends SignInState {
   final User user;
   final AuthProvider authProvider;
-  final int userId;
+  final String userId;
   final String token;
   final bool isNewUser;
   final String status;

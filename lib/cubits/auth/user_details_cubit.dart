@@ -60,6 +60,7 @@ class UserDetailsCubit extends Cubit<UserDetailsState> {
   }
 
   bool isFarmer() {
+    // return true;
     if (state is UserDetailsFetchSuccess) {
       return (state as UserDetailsFetchSuccess).userProfile.userType ==
           Constants.farmerType;

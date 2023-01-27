@@ -36,35 +36,31 @@ class AuthCubit extends Cubit<AuthState> {
   void checkIsAuthenticated() {
     if (session.getBoolData(Constants.isUserLoggedInSessionKey) ?? false) {
       emit(Authenticated(AuthModel(
-          authProvider: authRepository.getAuthProviderFromString(
-              session.getStringData(Constants.authProviderSessionKey)),
-          userId: session.getIntData(Constants.userIdSessionKey),
-          firebaseId: session.getStringData(Constants.firebaseIdSessionKey),
-          token: session.getStringData(Constants.tokenSessionKey))));
+        authProvider: authRepository.getAuthProviderFromString(
+            session.getStringData(Constants.authProviderSessionKey)),
+        userId: session.getStringData(Constants.userIdSessionKey),
+        firebaseId: session.getStringData(Constants.firebaseIdSessionKey),
+      )));
     } else {
       emit(Unauthenticated());
     }
   }
 
   void authenticateUser(
-      {required int userId,
+      {required String userId,
       required String firebaseId,
-      required String token,
       required AuthProvider authProvider}) {
     //
     session.saveData(Constants.isUserLoggedInSessionKey, true);
     session.saveData(Constants.firebaseIdSessionKey, firebaseId);
-    session.saveData(Constants.tokenSessionKey, token);
+
     session.saveData(Constants.authProviderSessionKey,
         authRepository.getAuthTypeString(authProvider));
 
     print('---auth---$state');
     //emit new state
     emit(Authenticated(AuthModel(
-        userId: userId,
-        firebaseId: firebaseId,
-        token: token,
-        authProvider: authProvider)));
+        userId: userId, firebaseId: firebaseId, authProvider: authProvider)));
   }
 
   String getUserFirebaseId() {
@@ -76,7 +72,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   String getUserId() {
     if (state is Authenticated) {
-      return (state as Authenticated).authModel.userId.toString();
+      return session.getStringData(Constants.userIdSessionKey);
     }
     return '0';
   }

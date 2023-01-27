@@ -12,6 +12,7 @@ class FarmerRepository {
     required bool isEditPage,
     required Map<String, String> files,
   }) async {
+    print('in method');
     var getdata = await apiBaseHelper.postApiFile(
         body: farmDetails,
         filelist: files,

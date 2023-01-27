@@ -1,4 +1,5 @@
 import 'package:agriculture_app/cubits/auth/auth_cubit.dart';
+import 'package:agriculture_app/helper/constant.dart';
 import 'package:agriculture_app/helper/strings.dart';
 import 'package:agriculture_app/screens/auth/resendOtpTimerContainer.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/glassmorphism_container.dart';
@@ -39,7 +40,7 @@ class _OtpScreenState extends State<OtpScreen> {
   String errorMessage = "";
   bool isLoading = false;
   String userVerificationId = "";
-  String countryCode = '+91';
+
   TextEditingController phoneNumberController = TextEditingController();
   List<TextEditingController> controllers = [];
   List<FocusNode> focusNodes = [];
@@ -161,7 +162,7 @@ class _OtpScreenState extends State<OtpScreen> {
               height: 5,
             ),
             Text(
-              '$countryCode${phoneNumberController.text.trim()}',
+              '${Constants.countryCode}${phoneNumberController.text.trim()}',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors
@@ -188,7 +189,7 @@ class _OtpScreenState extends State<OtpScreen> {
       controller: phoneNumberController,
       hintText: 'Enter Phone Number',
       textInputAction: TextInputAction.next,
-      prefixText: countryCode,
+      prefixText: Constants.countryCode,
       validator: Validator.validatePhoneNumber,
       textInputType: TextInputType.number,
     );
@@ -282,7 +283,11 @@ class _OtpScreenState extends State<OtpScreen> {
         if (state is SignInSuccess) {
           context
               .read<UserDetailsCubit>()
-              .fetchUserDetails(context.read<AuthCubit>().getUserId());
+              .fetchUserDetails(state.userId.toString());
+          context.read<AuthCubit>().authenticateUser(
+              userId: state.userId.toString(),
+              firebaseId: state.user.uid,
+              authProvider: state.authProvider);
           Navigator.of(context).pop();
           pushNewPage(context, Routes.main, replaceAll: true);
         }
@@ -330,7 +335,7 @@ class _OtpScreenState extends State<OtpScreen> {
   void signInWithPhoneNumber({required String phoneNumber}) async {
     await FirebaseAuth.instance.verifyPhoneNumber(
       timeout: const Duration(seconds: 60),
-      phoneNumber: '$countryCode$phoneNumber',
+      phoneNumber: '${Constants.countryCode}$phoneNumber',
       verificationCompleted: (PhoneAuthCredential credential) {
         print("Phone number verified");
       },

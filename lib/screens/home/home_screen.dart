@@ -44,7 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
+    initializeParameters();
+    getFarmerData();
     getUserData();
     // selectedTaluko = districtList.first.subDistrict!;
     // selectedVillage = districtList.first.villages!.first;
@@ -96,8 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
-    print(
-        'token== ${session.getStringData(Constants.token)}==${context.read<AuthCubit>().getUserId()}');
+    print('==is farmer==${context.read<UserDetailsCubit>().isFarmer()}');
     return Scaffold(
       body: BlocConsumer<UserDetailsCubit, UserDetailsState>(
           listener: (context, state) async {
@@ -112,13 +112,13 @@ class _HomeScreenState extends State<HomeScreen> {
           getFarmerData();
         }
         if (state is UserDetailsFetchFailure) {
-          showSnackBar(context, state.errorMessage);
+          print(state.errorMessage);
           if (state.errorMessage == StringRes.unauthorizedError) {
             pushNewPage(context, Routes.login, replaceAll: true);
           }
         }
       }, builder: (context, state) {
-        if (state is UserDetailsFetchFailure) {
+        /*  if (state is UserDetailsFetchFailure) {
           return ErrorScreen(
             onPressed: () {
               callRetryApi();
@@ -133,7 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: _isLoading ? const CircularProgressIndicator() : null,
           );
-        } else if (state is UserDetailsFetchInProgress) {
+        } else */
+        if (state is UserDetailsFetchInProgress) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -146,7 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Stack(
       children: [
         Container(
-          height: size.height * 0.22,
+          height: context.read<UserDetailsCubit>().isFarmer()
+              ? size.height * 0.15
+              : size.height * 0.22,
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             borderRadius: const BorderRadius.only(
@@ -159,81 +162,104 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
           ),
+          child: context.read<UserDetailsCubit>().isFarmer()
+              ? Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: size.height * 0.015,
+                    ),
+                    _buildNameRow(),
+                    SizedBox(
+                      height: size.height * 0.04,
+                    ),
+                    const AppLargeText(
+                      text: 'Application list',
+                      color: Color(0xFF1e232a),
+                      size: 20,
+                    ),
+                    smallSizedBox(),
+                    const Expanded(child: BuildFarmerList())
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SizedBox(
+                      height: size.height * 0.015,
+                    ),
+                    _buildNameRow(),
+                    SizedBox(
+                      height: size.height * 0.04,
+                    ),
+                    GestureDetector(
+                      onTap: () => pushNewPage(context, Routes.newApplication),
+                      child: Container(
+                        height: 80,
+                        width: double.maxFinite,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 1),
+                        decoration: BoxDecoration(
+                            color: AppColors.whiteColor,
+                            borderRadius: borderRadius(10, 10, 10, 10),
+                            boxShadow: [appShadow]),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const AppLargeText(
+                              text: StringRes.addNewFarmerDetails,
+                              size: 20,
+                            ),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 30,
+                              color: Theme.of(context).primaryColor,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    defaultSizedBox(),
+                    _builfFilter(),
+                    const AppLargeText(
+                      text: 'Application list',
+                      color: Color(0xFF1e232a),
+                      size: 20,
+                    ),
+                    smallSizedBox(),
+                    const Expanded(child: BuildFarmerList())
+                  ],
+                ),
+        )),
+      ],
+    );
+  }
+
+  Row _buildNameRow() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          flex: 5,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              SizedBox(
-                height: size.height * 0.015,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const AppText(
-                          text: '${StringRes.hello},',
-                          color: AppColors.whiteColor,
-                        ),
-                        smallSizedBox(),
-                        AppLargeText(
-                          text: context.read<UserDetailsCubit>().getUserName(),
-                          color: AppColors.whiteColor,
-                          size: 22,
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildLogoutButton()
-                ],
-              ),
-              SizedBox(
-                height: size.height * 0.04,
-              ),
-              GestureDetector(
-                onTap: () => pushNewPage(context, Routes.newApplication),
-                child: Container(
-                  height: 80,
-                  width: double.maxFinite,
-                  alignment: Alignment.centerLeft,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 1),
-                  decoration: BoxDecoration(
-                      color: AppColors.whiteColor,
-                      borderRadius: borderRadius(10, 10, 10, 10),
-                      boxShadow: [appShadow]),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const AppLargeText(
-                        text: StringRes.addNewFarmerDetails,
-                        size: 20,
-                      ),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 30,
-                        color: Theme.of(context).primaryColor,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              defaultSizedBox(),
-              _builfFilter(),
-              const AppLargeText(
-                text: 'Application list',
-                color: Color(0xFF1e232a),
-                size: 20,
+            children: [
+              const AppText(
+                text: '${StringRes.hello},',
+                color: AppColors.whiteColor,
               ),
               smallSizedBox(),
-              const Expanded(child: BuildFarmerList())
+              AppLargeText(
+                text: context.read<UserDetailsCubit>().getUserName(),
+                color: AppColors.whiteColor,
+                size: 22,
+              ),
             ],
           ),
-        )),
+        ),
+        _buildLogoutButton()
       ],
     );
   }

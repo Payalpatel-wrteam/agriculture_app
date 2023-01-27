@@ -53,7 +53,7 @@ class Session with ChangeNotifier {
     session.removeData(Constants.firebaseIdSessionKey);
     session.removeData(Constants.authProviderSessionKey);
     session.removeData(Constants.userIdSessionKey);
-    // session.removeData(Constants.tokenSessionKey);
+    session.removeData(Constants.tokenSessionKey);
     // session.removeData(Constants.fcmTokenSessionKey);
   }
 }

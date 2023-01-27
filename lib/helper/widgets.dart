@@ -103,6 +103,7 @@ Widget inputWidget({
   bool useValidator = true,
   VoidCallback? onTap,
   bool autoFocus = true,
+  String? prefixText,
   ValueChanged<String>? onChanged,
 }) {
   return Padding(
@@ -156,6 +157,14 @@ Widget inputWidget({
                   contentPadding: EdgeInsets.all(contentPadiing!),
                   hintText: hint,
                   border: InputBorder.none,
+                  prefix: prefixText != null
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(prefixText,
+                              style: const TextStyle(
+                                  color: AppColors.blackColor, fontSize: 16)),
+                        )
+                      : null,
                   // suffixIcon: isDropDown ? Image.asset() : null,
                   hintStyle:
                       TextStyle(color: AppColors.greyColor, fontSize: 14)),
