@@ -38,14 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
   late Size size;
   bool _isLoading = false;
   GetFarmDetailsSuccess? getBlocState;
-  String selectedTaluko = '', selectedVillage = '';
-  List<String> villageList = [];
 
   @override
   void initState() {
     super.initState();
-    initializeParameters();
-    getFarmerData();
+    // initializeParameters();
+    // getFarmerData();
     getUserData();
     // selectedTaluko = districtList.first.subDistrict!;
     // selectedVillage = districtList.first.villages!.first;
@@ -86,8 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   callRetryApi() {
-    print('**retry api');
-
     context
         .read<UserDetailsCubit>()
         .fetchUserDetails(context.read<AuthCubit>().getUserId());
@@ -118,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       }, builder: (context, state) {
-        /*  if (state is UserDetailsFetchFailure) {
+        if (state is UserDetailsFetchFailure) {
           return ErrorScreen(
             onPressed: () {
               callRetryApi();
@@ -133,8 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: _isLoading ? const CircularProgressIndicator() : null,
           );
-        } else */
-        if (state is UserDetailsFetchInProgress) {
+        } else if (state is UserDetailsFetchInProgress) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -162,75 +157,57 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
           ),
-          child: context.read<UserDetailsCubit>().isFarmer()
-              ? Column(
-                  children: <Widget>[
-                    SizedBox(
-                      height: size.height * 0.015,
-                    ),
-                    _buildNameRow(),
-                    SizedBox(
-                      height: size.height * 0.04,
-                    ),
-                    const AppLargeText(
-                      text: 'Application list',
-                      color: Color(0xFF1e232a),
-                      size: 20,
-                    ),
-                    smallSizedBox(),
-                    const Expanded(child: BuildFarmerList())
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    SizedBox(
-                      height: size.height * 0.015,
-                    ),
-                    _buildNameRow(),
-                    SizedBox(
-                      height: size.height * 0.04,
-                    ),
-                    GestureDetector(
-                      onTap: () => pushNewPage(context, Routes.newApplication),
-                      child: Container(
-                        height: 80,
-                        width: double.maxFinite,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 1),
-                        decoration: BoxDecoration(
-                            color: AppColors.whiteColor,
-                            borderRadius: borderRadius(10, 10, 10, 10),
-                            boxShadow: [appShadow]),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const AppLargeText(
-                              text: StringRes.addNewFarmerDetails,
-                              size: 20,
-                            ),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 30,
-                              color: Theme.of(context).primaryColor,
-                            )
-                          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(
+                height: size.height * 0.015,
+              ),
+              _buildNameRow(),
+              SizedBox(
+                height: size.height * 0.04,
+              ),
+              if (!context.read<UserDetailsCubit>().isFarmer())
+                GestureDetector(
+                  onTap: () => pushNewPage(context, Routes.newApplication),
+                  child: Container(
+                    height: 80,
+                    width: double.maxFinite,
+                    alignment: Alignment.centerLeft,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 1),
+                    decoration: BoxDecoration(
+                        color: AppColors.whiteColor,
+                        borderRadius: borderRadius(10, 10, 10, 10),
+                        boxShadow: [appShadow]),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const AppLargeText(
+                          text: StringRes.addNewFarmerDetails,
+                          size: 20,
                         ),
-                      ),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 30,
+                          color: Theme.of(context).primaryColor,
+                        )
+                      ],
                     ),
-                    defaultSizedBox(),
-                    _builfFilter(),
-                    const AppLargeText(
-                      text: 'Application list',
-                      color: Color(0xFF1e232a),
-                      size: 20,
-                    ),
-                    smallSizedBox(),
-                    const Expanded(child: BuildFarmerList())
-                  ],
+                  ),
                 ),
+              // defaultSizedBox(),
+              // // _builfFilter(),
+              // const AppLargeText(
+              //   text: 'Application list',
+              //   color: Color(0xFF1e232a),
+              //   size: 20,
+              // ),
+              // smallSizedBox(),
+              const Expanded(child: BuildFarmerList())
+            ],
+          ),
         )),
       ],
     );
@@ -260,108 +237,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         _buildLogoutButton()
-      ],
-    );
-  }
-
-  _builfFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        const AppText(text: '${StringRes.filterBy}:'),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: SizedBox(
-                width: size.width * 0.3,
-                child: dropwdownWidget(
-                    hintText: StringRes.taluka,
-                    text: '',
-                    selectedValue: selectedTaluko,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedTaluko = value.toString();
-                        selectedVillage = '';
-                        // selectedVillage = districtList
-                        //     .firstWhere(
-                        //         (element) => element.subDistrict == selectedTaluko)
-                        //     .villages!
-                        //     .first;
-                      });
-                      print('change of district==$selectedTaluko');
-                    },
-                    items: districtList.map((item) {
-                      return DropdownMenuItem(
-                          value: item.subDistrict,
-                          child: Text(item.subDistrict!));
-                    }).toList()),
-              ),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            Expanded(
-              child: SizedBox(
-                width: size.width * 0.3,
-                child: dropwdownWidget(
-                    hintText: StringRes.village,
-                    text: '',
-                    selectedValue: selectedVillage,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedVillage = value.toString();
-                      });
-
-                      print('change of village==$selectedVillage');
-                    },
-                    items: selectedTaluko.isNotEmpty
-                        ? districtList
-                            .firstWhere((element) =>
-                                element.subDistrict == selectedTaluko)
-                            .villages!
-                            .map((item) {
-                            return DropdownMenuItem(
-                                value: item, child: Text(item));
-                          }).toList()
-                        : null),
-              ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                buildTextButton(
-                    const AppText(
-                        text: 'Filter',
-                        textDecoration: TextDecoration.underline), () {
-                  params.remove(ApiConstants.talukaApiKey);
-                  params.remove(ApiConstants.villageApiKey);
-                  if (selectedTaluko != '') {
-                    params.addAll({ApiConstants.talukaApiKey: selectedTaluko});
-                  }
-                  if (selectedVillage != '') {
-                    params
-                        .addAll({ApiConstants.villageApiKey: selectedVillage});
-                  }
-                  getFarmerData();
-                }),
-                defaultSizedBox(),
-                buildTextButton(
-                    const AppText(
-                        text: 'All',
-                        textDecoration: TextDecoration.underline), () {
-                  params.remove(ApiConstants.talukaApiKey);
-                  params.remove(ApiConstants.villageApiKey);
-                  selectedTaluko = '';
-                  selectedVillage = '';
-                  setState(() {});
-                  getFarmerData();
-                }),
-              ],
-            ),
-          ],
-        ),
       ],
     );
   }

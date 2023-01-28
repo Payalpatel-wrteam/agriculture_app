@@ -47,9 +47,6 @@ class FarmerRepository {
       bool error = getdata[Constants.error];
 
       if (!error) {
-        var list = getdata[Constants.data] as List<dynamic>;
-
-        farmList = list.map((model) => FarmDetails.fromJson(model)).toList();
         return Map.from(getdata);
       } else {
         throw CustomException(getdata[Constants.message]);

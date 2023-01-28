@@ -414,7 +414,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
               farmDetails: getBlocState.farmDetails,
               totalData: getBlocState.totalData - 1,
               hasMore:
-                  getBlocState.totalData - 1 > getBlocState.farmDetails.length);
+                  getBlocState.totalData - 1 > getBlocState.farmDetails.length,
+              talukaAndVillages: getBlocState.talukaAndVillages);
           Navigator.of(context).pop();
         }
 
@@ -506,11 +507,14 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           List<FarmDetails> farmDetails = [];
           int totalData = 0;
           bool hasMore = false;
+          List<Map<String, List<String>>> talukaAndVillages = [];
           GetFarmDetailsCubit getCubit = context.read<GetFarmDetailsCubit>();
           if (getCubit.state is GetFarmDetailsSuccess) {
             farmDetails = (getCubit.state as GetFarmDetailsSuccess).farmDetails;
             totalData = (getCubit.state as GetFarmDetailsSuccess).totalData;
             hasMore = (getCubit.state as GetFarmDetailsSuccess).hasMore;
+            talukaAndVillages =
+                (getCubit.state as GetFarmDetailsSuccess).talukaAndVillages;
           }
           final index = farmDetails
               .indexWhere((element) => element.id == state.farmDetails.id);
@@ -523,7 +527,10 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           }
           print('farm details==$farmDetails==$totalData==$hasMore');
           getCubit.emitSuccessState(
-              farmDetails: farmDetails, totalData: totalData, hasMore: hasMore);
+              farmDetails: farmDetails,
+              totalData: totalData,
+              hasMore: hasMore,
+              talukaAndVillages: talukaAndVillages);
 
           showSnackBar(_scaffoldKey.currentContext!, state.successMessage);
           Navigator.of(context).pop();

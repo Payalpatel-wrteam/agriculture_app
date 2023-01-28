@@ -16,7 +16,9 @@ class GetFarmDetailsSuccess extends GetFarmDetailsState {
   final List<FarmDetails> farmDetails;
   final int totalData;
   final bool hasMore;
-  GetFarmDetailsSuccess(this.farmDetails, this.totalData, this.hasMore);
+  final List<Map<String, List<String>>> talukaAndVillages;
+  GetFarmDetailsSuccess(
+      this.farmDetails, this.totalData, this.hasMore, this.talukaAndVillages);
 }
 
 class GetFarmDetailsFailure extends GetFarmDetailsState {
@@ -40,12 +42,12 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
       final data = list.map((model) => FarmDetails.fromJson(model)).toList();
 
       final total = int.parse(value[Constants.total].toString());
+      List<Map<String, List<String>>> talukaList = [];
+
+      (value[ApiConstants.talukaAndVillages] as Map).forEach(
+          (k, v) => talukaList.add({k as String: List<String>.from(v)}));
       print('total==$total==hasmore==${total > data.length}');
-      emit(GetFarmDetailsSuccess(
-        data,
-        total,
-        total > data.length,
-      ));
+      emit(GetFarmDetailsSuccess(data, total, total > data.length, talukaList));
     }).catchError((e) {
       emit(GetFarmDetailsFailure(e.toString()));
     });
@@ -58,8 +60,10 @@ class GetFarmDetailsCubit extends Cubit<GetFarmDetailsState> {
   emitSuccessState(
       {required List<FarmDetails> farmDetails,
       required int totalData,
-      required bool hasMore}) {
+      required bool hasMore,
+      required List<Map<String, List<String>>> talukaAndVillages}) {
     print('in success state==${farmDetails.length}==$totalData==$hasMore');
-    emit(GetFarmDetailsSuccess(farmDetails, totalData, hasMore));
+    emit(GetFarmDetailsSuccess(
+        farmDetails, totalData, hasMore, talukaAndVillages));
   }
 }

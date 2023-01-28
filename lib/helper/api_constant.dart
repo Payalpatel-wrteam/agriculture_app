@@ -46,4 +46,5 @@ class ApiConstants {
   static const String quantityApiKey = 'quantity';
   static const String dateOfAddWaterApiKey = 'date_of_add_water';
   static const String imageApiKey = 'image';
+  static const String talukaAndVillages = 'taluka_and_villages';
 }

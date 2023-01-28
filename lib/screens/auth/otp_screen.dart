@@ -288,8 +288,7 @@ class _OtpScreenState extends State<OtpScreen> {
               userId: state.userId.toString(),
               firebaseId: state.user.uid,
               authProvider: state.authProvider);
-          Navigator.of(context).pop();
-          pushNewPage(context, Routes.main, replaceAll: true);
+          redirectToMainScreen(context);
         }
         if (state is SignInFailure) {
           showSnackBar(context, state.errorMessage);

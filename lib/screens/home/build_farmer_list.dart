@@ -17,6 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/routes.dart';
 import '../../cubits/auth/user_details_cubit.dart';
 import '../../helper/widgets.dart';
+import '../screen_widgets.dart/app_large_text.dart';
 
 class BuildFarmerList extends StatefulWidget {
   const BuildFarmerList({Key? key}) : super(key: key);
@@ -34,6 +35,9 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
   bool _hasNextPage = true;
   late Map<String, dynamic> param;
   List<FarmDetails> farmDetails = [];
+  String selectedTaluko = '', selectedVillage = '';
+  List<String> villageList = [];
+  List<Map<String, List<String>>> filteredTalukaList = [];
 
   // Used to display loading indicators when _loadMore function is running
   bool _isLoadMoreRunning = false;
@@ -112,10 +116,14 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
 
   @override
   Widget build(BuildContext context) {
+    size = MediaQuery.of(context).size;
+    print('=filter list ===$filteredTalukaList');
     return BlocConsumer<GetFarmDetailsCubit, GetFarmDetailsState>(
       listener: (context, state) {
         if (state is GetFarmDetailsSuccess) {
+          filteredTalukaList = state.talukaAndVillages;
           farmDetails = state.farmDetails;
+          print('==list===$filteredTalukaList');
         }
         if (state is GetFarmDetailsFailure) {
           showSnackBar(context, state.errorMessage);
@@ -124,28 +132,43 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
       builder: (context, state) {
         print('get build state==$state');
         if (state is GetFarmDetailsSuccess) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              getFarmerData();
-              _hasNextPage = true;
-              _offset = 0;
-              _isLoadMoreRunning = false;
-            },
-            triggerMode: RefreshIndicatorTriggerMode.anywhere,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Flexible(child: _buildListView(state)),
-                if (_isLoadMoreRunning == true)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10, bottom: 10),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              defaultSizedBox(),
+              if (!context.read<UserDetailsCubit>().isFarmer()) _builfFilter(),
+              const AppLargeText(
+                text: 'Application list',
+                color: Color(0xFF1e232a),
+                size: 20,
+              ),
+              smallSizedBox(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    getFarmerData();
+                    _hasNextPage = true;
+                    _offset = 0;
+                    _isLoadMoreRunning = false;
+                  },
+                  triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Flexible(child: _buildListView(state)),
+                      if (_isLoadMoreRunning == true)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+              ),
+            ],
           );
         }
         if (state is GetFarmDetailsInProgress) {
@@ -170,6 +193,7 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
         separatorBuilder: (context, index) => const SizedBox(
           height: 15,
         ),
+        physics: const AlwaysScrollableScrollPhysics(),
         // clipBehavior: Clip.none,
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -235,6 +259,116 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
           ],
         ),
       ),
+    );
+  }
+
+  _builfFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const AppText(text: '${StringRes.filterBy}:'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: SizedBox(
+                width: size.width * 0.3,
+                child: dropwdownWidget(
+                  hintText: StringRes.taluka,
+                  text: '',
+                  selectedValue: selectedTaluko,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedTaluko = value.toString();
+                      selectedVillage = '';
+                      print(
+                          '****${filteredTalukaList.firstWhere((element) => element.containsKey(selectedTaluko)).values.first}');
+                      villageList = filteredTalukaList
+                          .firstWhere(
+                              (element) => element.containsKey(selectedTaluko))
+                          .values
+                          .first;
+                    });
+                    print('change of district==$selectedTaluko==$villageList');
+                  },
+                  items: (filteredTalukaList.map((e) => e.keys).toList())
+                      .map<DropdownMenuItem<String>>(
+                        (e) => DropdownMenuItem(
+                          value: e.first,
+                          child: Text(e.first),
+                          alignment: Alignment.center,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: SizedBox(
+                width: size.width * 0.3,
+                child: dropwdownWidget(
+                  hintText: StringRes.village,
+                  text: '',
+                  selectedValue: selectedVillage,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedVillage = value.toString();
+                    });
+
+                    print('change of village==$selectedVillage');
+                  },
+                  items: selectedTaluko.isNotEmpty
+                      ? villageList
+                          .map(
+                            (e) => DropdownMenuItem<String>(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                          .toList()
+                      : null,
+                ),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildTextButton(
+                    const AppText(
+                        text: 'Filter',
+                        textDecoration: TextDecoration.underline), () {
+                  params.remove(ApiConstants.talukaApiKey);
+                  params.remove(ApiConstants.villageApiKey);
+                  if (selectedTaluko != '') {
+                    params.addAll({ApiConstants.talukaApiKey: selectedTaluko});
+                  }
+                  if (selectedVillage != '') {
+                    params
+                        .addAll({ApiConstants.villageApiKey: selectedVillage});
+                  }
+                  getFarmerData();
+                }),
+                defaultSizedBox(),
+                buildTextButton(
+                    const AppText(
+                        text: 'All',
+                        textDecoration: TextDecoration.underline), () {
+                  params.remove(ApiConstants.talukaApiKey);
+                  params.remove(ApiConstants.villageApiKey);
+                  selectedTaluko = '';
+                  selectedVillage = '';
+                  setState(() {});
+                  getFarmerData();
+                }),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
