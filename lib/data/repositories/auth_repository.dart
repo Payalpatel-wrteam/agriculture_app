@@ -59,7 +59,8 @@ class AuthRepository {
           )}');
           result[Constants.userId] = response[Constants.id].toString();
           result[Constants.token] = '';
-          result[Constants.status] = '1';
+          result[Constants.status] =
+              response[Constants.status] ?? Constants.activeStatus;
         }
       } else {
         throw CustomException(StringRes.defaultErrorMessage);

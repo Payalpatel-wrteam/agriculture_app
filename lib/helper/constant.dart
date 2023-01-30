@@ -43,5 +43,7 @@ class Constants {
   static const String farmerType = '1';
   static const int otpTimeOutSeconds = 60;
 
+  static const String activeStatus = '1';
+
   static const String countryCode = '+91';
 }

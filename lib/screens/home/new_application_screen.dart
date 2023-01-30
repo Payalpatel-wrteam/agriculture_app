@@ -15,6 +15,7 @@ import 'package:agriculture_app/helper/validator.dart';
 import 'package:agriculture_app/helper/widgets.dart';
 import 'package:agriculture_app/main.dart';
 import 'package:agriculture_app/screens/animated_textformfield.dart';
+import 'package:agriculture_app/screens/home/build_farmer_list.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/responsive_button.dart';
 import 'package:agriculture_app/screens/screen_widgets.dart/scroll_behavior.dart';
@@ -294,7 +295,8 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             title: StringRes.mobile,
             isPhoneNumber: true,
             isReadOnly: isReadOnly,
-            prefixText: Constants.countryCode,
+            prefixText:
+                widget.isEditPage == true ? null : Constants.countryCode,
             validator: (value) => Validator.validatePhoneNumber(value)),
         inputWidget(
           textEditingController: allocatedLandAreaTxtController,
@@ -518,6 +520,7 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
           }
           final index = farmDetails
               .indexWhere((element) => element.id == state.farmDetails.id);
+
           if (index != -1) {
             farmDetails[index] = state.farmDetails;
           } else {
@@ -525,7 +528,23 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
             totalData = totalData + 1;
             hasMore = totalData > farmDetails.length;
           }
-          print('farm details==$farmDetails==$totalData==$hasMore');
+          int talukaIndex = talukaAndVillages
+              .indexWhere((element) => element.keys.contains(selectedTaluko));
+          print('==taluka index === $talukaIndex');
+          if (talukaIndex == -1) {
+            talukaAndVillages.add({
+              selectedTaluko: [selectedVillage]
+            });
+          } else {
+            if (!talukaAndVillages[talukaIndex]
+                .values
+                .first
+                .contains(selectedVillage)) {
+              talukaAndVillages[talukaIndex].values.first.add(selectedVillage);
+            }
+          }
+          print('after new add===$talukaAndVillages');
+
           getCubit.emitSuccessState(
               farmDetails: farmDetails,
               totalData: totalData,
@@ -562,6 +581,12 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                     print('selected==$selectedImage');
                     if (selectedVillage.isEmpty) {
                       showSnackBar(context, 'Please select village from list');
+                      return;
+                    } else if (widget.isEditPage == true &&
+                        mobileTxtController.text.trim().length != 13) {
+                      showSnackBar(context,
+                          'Please enter valid phone number with Country Code +91');
+                      return;
                     } else {
                       if (selectedImage != null) {
                         apifilelist[ApiConstants.imageApiKey] =
@@ -574,8 +599,9 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
                             farmnerNameTxtController.text.trim(),
                         ApiConstants.villageApiKey: selectedVillage,
                         ApiConstants.talukaApiKey: selectedTaluko,
-                        ApiConstants.mobileApiKey:
-                            '${Constants.countryCode}${mobileTxtController.text.trim()}',
+                        ApiConstants.mobileApiKey: widget.isEditPage == true
+                            ? mobileTxtController.text.trim()
+                            : '${Constants.countryCode}${mobileTxtController.text.trim()}',
                         ApiConstants.allocatedLandAreaApiKey:
                             allocatedLandAreaTxtController.text.trim(),
                         ApiConstants.locationOfFarmApiKey: jsonEncode({
@@ -817,28 +843,29 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
         child: Stack(
           children: [
             ClipOval(child: buildProfilePicture()),
-            Positioned(
-              bottom: 10,
-              right: 10,
-              child: GestureDetector(
-                onTap: _showSelectionDialog,
-                child: Container(
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border:
-                          Border.all(width: 2, color: AppColors.whiteColor)),
-                  child: const CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Color(0xFFbebec7),
-                    child: Icon(
-                      Icons.mode_edit_outline_outlined,
-                      size: 15,
-                      color: AppColors.blackColor,
+            if (!context.read<UserDetailsCubit>().isFarmer())
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: _showSelectionDialog,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(width: 2, color: AppColors.whiteColor)),
+                    child: const CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Color(0xFFbebec7),
+                      child: Icon(
+                        Icons.mode_edit_outline_outlined,
+                        size: 15,
+                        color: AppColors.blackColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
+              )
           ],
         ),
       ),

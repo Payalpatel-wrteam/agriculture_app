@@ -26,6 +26,8 @@ class BuildFarmerList extends StatefulWidget {
   _BuildFarmerListState createState() => _BuildFarmerListState();
 }
 
+List<Map<String, List<String>>> filteredTalukaList = [];
+
 class _BuildFarmerListState extends State<BuildFarmerList> {
   late Size size;
   GetFarmDetailsSuccess? getBlocState;
@@ -37,7 +39,6 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
   List<FarmDetails> farmDetails = [];
   String selectedTaluko = '', selectedVillage = '';
   List<String> villageList = [];
-  List<Map<String, List<String>>> filteredTalukaList = [];
 
   // Used to display loading indicators when _loadMore function is running
   bool _isLoadMoreRunning = false;
@@ -297,7 +298,6 @@ class _BuildFarmerListState extends State<BuildFarmerList> {
                         (e) => DropdownMenuItem(
                           value: e.first,
                           child: Text(e.first),
-                          alignment: Alignment.center,
                         ),
                       )
                       .toList(),

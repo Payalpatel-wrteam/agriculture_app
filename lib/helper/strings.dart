@@ -91,7 +91,7 @@ class StringRes {
   static const String addNewFarmerDetails = 'Add New Farmer Details';
   static const String farmerName = 'ખેડૂત નામ';
   static const String village = 'ગામ';
-  static const String taluka = 'તાલુકો';
+  static const String taluka = 'પ્રદેશ';
   static const String mobile = 'મોબાઈલ નં';
   static const String allocatedLandArea = 'યોજના માં ફાળવેલ જમીન વિસ્તાર';
   static const String locationOfFarm = "વાડી નું લોકેશન";

@@ -6,9 +6,15 @@ class UserProfile {
   final String? firebaseId;
   final String? email;
   final String? userType;
+  final String? status;
 
   UserProfile(
-      {this.email, this.firebaseId, this.name, this.userId, this.userType});
+      {this.email,
+      this.firebaseId,
+      this.name,
+      this.userId,
+      this.userType,
+      this.status});
 
   static UserProfile fromJson(Map<String, dynamic> jsonData) {
     print('==in json ===$jsonData');
@@ -18,6 +24,7 @@ class UserProfile {
       email: jsonData[Constants.email] ?? '',
       firebaseId: jsonData[Constants.firebaseId] ?? '',
       userId: jsonData['id'],
+      status: jsonData['status'] ?? '1',
       userType: jsonData['type'] != null
           ? jsonData['type'].toString()
           : Constants.supervisorType,

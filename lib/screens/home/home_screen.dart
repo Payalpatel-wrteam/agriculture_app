@@ -104,6 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
           if (apitimer != null) {
             apitimer!.cancel();
           }
+          if (state.userProfile.status != Constants.activeStatus &&
+              context.read<AuthCubit>().state is Authenticated) {
+            showSnackBar(context, StringRes.deactivatedErrorMessage);
+            context.read<AuthCubit>().signOut();
+            pushNewPage(context, Routes.login, replaceAll: true);
+          }
           initializeParameters();
           getFarmerData();
         }

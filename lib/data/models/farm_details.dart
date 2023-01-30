@@ -43,6 +43,7 @@ class FarmDetails {
       id});
 
   FarmDetails.fromJson(Map<String, dynamic> json) {
+    print('from json');
     farmerName = json[ApiConstants.farmerNameApiKey];
     image = json[ApiConstants.imageApiKey] ?? '';
     village = json[ApiConstants.villageApiKey];
@@ -62,12 +63,15 @@ class FarmDetails {
     createdAt = json[ApiConstants.createdAtApiKey] ?? '';
     id = json[ApiConstants.idAPiKey];
     deleteInProgress = false;
+    print(
+        'before fer json==${json[ApiConstants.fertilizerDetailsApiKey].runtimeType}');
     if (json[ApiConstants.fertilizerDetailsApiKey] != null) {
       detailsOfFertilizer = <FertilizerDetail>[];
       json[ApiConstants.fertilizerDetailsApiKey].forEach((v) {
         detailsOfFertilizer!.add(FertilizerDetail.fromJson(v));
       });
     }
+    print('end json');
   }
 
   Map<String, dynamic> toJson() {
@@ -108,10 +112,12 @@ class FertilizerDetail {
   });
 
   FertilizerDetail.fromJson(Map<String, dynamic> json) {
+    print('fom1');
     id = json[ApiConstants.idAPiKey];
     name = json[ApiConstants.nameAPiKey];
     date = json[ApiConstants.dateOfAddWaterApiKey];
     quantity = json[ApiConstants.quantityApiKey];
+    print('fom3');
   }
   // Map<String, dynamic> toJson() {
   //   final Map<String, dynamic> data = Map<String, dynamic>();

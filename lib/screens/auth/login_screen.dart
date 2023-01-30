@@ -96,7 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         if (state is SignInSuccess &&
             state.authProvider == AuthProvider.email) {
-          if (state.status == '0') {
+          print('==stattues===${state.status}');
+          if (state.status != Constants.activeStatus) {
             showSnackBar(context, StringRes.deactivatedErrorMessage);
             return;
           }

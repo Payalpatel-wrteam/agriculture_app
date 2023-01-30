@@ -281,6 +281,10 @@ class _OtpScreenState extends State<OtpScreen> {
     return BlocConsumer<SignInCubit, SignInState>(
       listener: (context, state) {
         if (state is SignInSuccess) {
+          if (state.status != Constants.activeStatus) {
+            showSnackBar(context, StringRes.deactivatedErrorMessage);
+            return;
+          }
           context
               .read<UserDetailsCubit>()
               .fetchUserDetails(state.userId.toString());

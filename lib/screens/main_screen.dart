@@ -1,17 +1,13 @@
-import 'package:agriculture_app/cubits/farmerApplications/get_farm_details_cubit.dart';
 import 'package:agriculture_app/helper/widgets.dart';
 import 'package:agriculture_app/screens/home/home_screen.dart';
-import 'package:agriculture_app/screens/screen_widgets.dart/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../app/routes.dart';
 import '../cubits/auth/auth_cubit.dart';
-import '../cubits/auth/user_details_cubit.dart';
-import '../cubits/farmerApplications/delete_farm_details_cubit.dart';
+
 import '../data/models/disctricts.dart';
 import '../data/models/districts_list.dart';
-import '../helper/constant.dart';
 import '../helper/strings.dart';
 import 'home/new_application_screen.dart';
 
@@ -28,7 +24,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     var list = DistrictsList().districts;
     districtList = list.map((model) => Districts.fromJson(model)).toList();
@@ -55,6 +50,4 @@ class _MainScreenState extends State<MainScreen> {
       return const HomeScreen();
     });
   }
-
-  
 }
