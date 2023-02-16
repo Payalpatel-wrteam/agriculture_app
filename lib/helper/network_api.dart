@@ -30,7 +30,6 @@ class ApiBaseHelper {
     });
     print('token==$token');
 
-
     var responseJson, response;
     print('---param---$param---$apiMethodUrl');
     try {
@@ -45,7 +44,7 @@ class ApiBaseHelper {
                 headers: defaultHeaders, body: param.isNotEmpty ? param : {})
             .onError((error, stackTrace) async {
           print('---api response---$response--$url--$error');
-          return Future.value();
+          throw CustomException(StringRes.defaultErrorMessage);
         }).timeout(const Duration(minutes: Constants.apiTimeOut));
       } else {
         // response = await http.get(
@@ -53,9 +52,9 @@ class ApiBaseHelper {
         //   headers: {'Authorization': 'Bearer ****'},
         // ).timeout(const Duration(minutes: Constants.apiTimeOut));
       }
-      print('---api response---$response');
       if (response != null) {
         responseJson = getJsonResponse(response: response);
+        print('---api response---$responseJson');
       } else {
         throw CustomException(StringRes.defaultErrorMessage);
       }
@@ -121,6 +120,7 @@ class ApiBaseHelper {
     } else {
       code = response!.statusCode;
     }
+    print('code===$code');
     switch (code) {
       case 200:
         if (isfromfile) {

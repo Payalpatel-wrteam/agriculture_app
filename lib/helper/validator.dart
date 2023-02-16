@@ -6,7 +6,7 @@ class Validator {
       r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
       r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
   static validateEmail(String? email) {
-    if (email!.isEmpty) {
+    if (email!.trim().isEmpty) {
       return StringRes.emptyEmailMessage;
     } else if (!RegExp(emailPattern).hasMatch(email)) {
       return StringRes.invalidEmailMessage;
@@ -16,7 +16,7 @@ class Validator {
   }
 
   static emptyValueValidation(String? value) {
-    if (value!.isEmpty) {
+    if (value!.trim().isEmpty) {
       return StringRes.emptyValueMessage;
     } else {
       return null;
@@ -24,7 +24,7 @@ class Validator {
   }
 
   static validatePassword(String? value) {
-    if (value!.isEmpty) {
+    if (value!.trim().isEmpty) {
       return StringRes.emptyValueMessage;
     } else if (value.length < 6) {
       return StringRes.invalidPasswordLengthMessage;
@@ -38,7 +38,7 @@ class Validator {
     //below regex for indian number
     final pattern = RegExp(
         r"((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}");
-    if (value!.isEmpty && !pattern.hasMatch(value)) {
+    if (value!.trim().isEmpty && !pattern.hasMatch(value)) {
       return StringRes.invalidPhoneMessage;
     } else {
       return null;
@@ -47,7 +47,7 @@ class Validator {
 
   static validateName(String? value) {
     final pattern = RegExp(r'^[a-zA-Z ]+$');
-    if (value!.isEmpty) {
+    if (value!.trim().isEmpty) {
       return StringRes.emptyValueMessage;
     } else if (!pattern.hasMatch(value)) {
       return StringRes.invalidNameMessage;
