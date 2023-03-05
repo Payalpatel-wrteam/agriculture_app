@@ -202,7 +202,6 @@ class _OtpScreenState extends State<OtpScreen> {
         children: List.generate(6, (index) => createTextField(index)));
   }
 
-  int count = 0;
   Widget createTextField(int index) {
     final textStyle = TextStyle(
       color: Theme.of(context).primaryColor,
@@ -224,46 +223,31 @@ class _OtpScreenState extends State<OtpScreen> {
                   spreadRadius: 0)
             ],
             color: Theme.of(context).secondaryHeaderColor),
-        child: RawKeyboardListener(
-          focusNode: FocusNode(canRequestFocus: false),
-          onKey: (value) {
-            const backspace = LogicalKeyboardKey.backspace;
-            if (value.isKeyPressed(backspace)) {
-              if (count > 0) {
-                FocusScope.of(context).previousFocus();
-                count = 0;
-                return;
-              }
-              count++;
+        child: TextFormField(
+          controller: controllers[index],
+          focusNode: focusNodes[index],
+          maxLength: 1,
+          textInputAction: TextInputAction.done,
+          style: textStyle,
+          keyboardType: TextInputType.number,
+          autofocus: index == 0 ? true : false,
+          textAlign: TextAlign.center,
+          cursorColor: Theme.of(context).primaryColor,
+          decoration: InputDecoration(
+              counterText: '',
+              contentPadding: const EdgeInsets.only(bottom: 5),
+              border: InputBorder.none,
+              hintText: null,
+              hintStyle: textStyle),
+          onChanged: (val) {
+            focusNodes[index].unfocus();
+            if (val.isNotEmpty && index < 5) {
+              FocusScope.of(context).requestFocus(focusNodes[index + 1]);
+            }
+            if (val == '' && index > 0) {
+              FocusScope.of(context).requestFocus(focusNodes[index - 1]);
             }
           },
-          child: TextFormField(
-            controller: controllers[index],
-            maxLength: 1,
-            focusNode: focusNodes[index],
-            textInputAction: TextInputAction.done,
-            style: textStyle,
-            keyboardType: TextInputType.number,
-            autofocus: index == 0 ? true : false,
-            textAlign: TextAlign.center,
-            cursorColor: Theme.of(context).primaryColor,
-            decoration: InputDecoration(
-                counterText: '',
-                contentPadding: const EdgeInsets.only(bottom: 5),
-                border: InputBorder.none,
-                hintText: null,
-                hintStyle: textStyle),
-            onChanged: (val) {
-              focusNodes[index].unfocus();
-              if (val.isNotEmpty && index < 5) {
-                FocusScope.of(context).requestFocus(focusNodes[index + 1]);
-                count = 0;
-              }
-              if (val == '' && index > 0) {
-                FocusScope.of(context).requestFocus(focusNodes[index - 1]);
-              }
-            },
-          ),
         ));
   }
 

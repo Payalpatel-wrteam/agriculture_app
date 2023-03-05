@@ -165,8 +165,11 @@ class _NewApplicationScreenState extends State<NewApplicationScreen> {
       amountOfCompostTxtController.text = widget.farmDetails!.amountOfCompost!;
 
       Map position = jsonDecode(widget.farmDetails!.locationOfFarm!);
-      _currentLatitude = position[ApiConstants.latitudeApiKey];
-      _currentLongitude = position[ApiConstants.longitudeApiKey];
+      // print('====${(position[ApiConstants.latitudeApiKey]).runtimeType}');
+      _currentLatitude =
+          double.parse(position[ApiConstants.latitudeApiKey].toString());
+      _currentLongitude =
+          double.parse(position[ApiConstants.longitudeApiKey].toString());
       _kGooglePlex = CameraPosition(
         target: LatLng(_currentLatitude!, _currentLongitude!),
         zoom: 17.4746,
